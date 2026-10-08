@@ -1,6 +1,6 @@
 services:
   app:
-    image: book-service-app
+    image: authn-service-app
     env_file: .env
     build:
       context: .
@@ -17,15 +17,15 @@ services:
 
   db:
     image: postgres:18-alpine
-    container_name: book-service-db
+    container_name: authn-service-db
     environment:
-      POSTGRES_DB: book-service-db
-      POSTGRES_USER: book-service-user
-      POSTGRES_PASSWORD: book-service-pass
+      POSTGRES_DB: authn-service-db
+      POSTGRES_USER: authn-service-user
+      POSTGRES_PASSWORD: authn-service-pass
     ports:
       - "5433:5432"
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U book-service-user -d book-service-db" ]
+      test: [ "CMD-SHELL", "pg_isready -U authn-service-user -d authn-service-db" ]
       interval: 3s
       timeout: 5s
       retries: 5

@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 RUN rustup target add ${CARGO_BUILD_TARGET}
 
-WORKDIR /build/crates/book_service
+WORKDIR /build/crates/authn_service
 
 ENV CARGO_TARGET_DIR=/build/target \
     CARGO_BUILD_TARGET=${CARGO_BUILD_TARGET}

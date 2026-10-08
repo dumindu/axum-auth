@@ -9,7 +9,7 @@ servers:
 - url: http://localhost:3001
   description: Development
 paths:
-  /v1/books:
+  /v1/authns:
     get:
       tags:
       - Books
@@ -81,7 +81,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/books/{id}:
+  /v1/authns/{id}:
     get:
       tags:
       - Books
@@ -89,7 +89,7 @@ paths:
       parameters:
       - name: id
         in: path
-        description: The UUIDv7 identifier of the book
+        description: The UUIDv7 identifier of the authn
         required: true
         schema:
           type: string
@@ -116,7 +116,7 @@ paths:
       parameters:
       - name: id
         in: path
-        description: The UUIDv7 identifier of the book
+        description: The UUIDv7 identifier of the authn
         required: true
         schema:
           type: string
@@ -161,7 +161,7 @@ paths:
       parameters:
       - name: id
         in: path
-        description: The UUIDv7 identifier of the book
+        description: The UUIDv7 identifier of the authn
         required: true
         schema:
           type: string

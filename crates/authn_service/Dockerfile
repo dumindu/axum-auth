@@ -1,5 +1,5 @@
 FROM rust:1.97-slim
-WORKDIR /build/crates/book_service
+WORKDIR /build/crates/authn_service
 
 ENV CARGO_TARGET_DIR=/build/target
 

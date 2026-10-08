@@ -208,6 +208,28 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
+name = "authn_service"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "envconfig",
+ "garde",
+ "jiff",
+ "mimalloc",
+ "serde",
+ "toasty",
+ "toasty-cli",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "utoipa",
+ "uuid",
+]
+
+[[package]]
 name = "autocfg"
 version = "1.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -370,28 +392,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d2f6c7dbe95a6ed67ad9f18e57daf93a2f034c524b99fd2b76d18fdfeb6660aa"
 dependencies = [
  "hybrid-array",
-]
-
-[[package]]
-name = "book_service"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "axum",
- "envconfig",
- "garde",
- "jiff",
- "mimalloc",
- "serde",
- "toasty",
- "toasty-cli",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "utoipa",
- "uuid",
 ]
 
 [[package]]

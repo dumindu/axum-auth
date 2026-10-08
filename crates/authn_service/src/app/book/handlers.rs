@@ -17,7 +17,7 @@ use crate::{
 
 #[utoipa::path(
     get,
-    path = "/v1/books",
+    path = "/v1/authns",
     tag = "Books",
     params(
         Pagination
@@ -32,17 +32,17 @@ pub async fn list(
     Query(pagination): Query<Pagination>,
 ) -> Result<impl IntoResponse, Error> {
     let (limit, offset) = pagination.limit_offset();
-    let books =
+    let authns =
         Book::all().limit(limit).offset(offset).exec(&mut state.db).await.map_err(|err| {
             error!(target: "database", "failed to fetch: {err:?}");
             Error::DbFetch
         })?;
-    Ok((StatusCode::OK, Json(books)))
+    Ok((StatusCode::OK, Json(authns)))
 }
 
 #[utoipa::path(
     post,
-    path = "/v1/books",
+    path = "/v1/authns",
     tag = "Books",
     request_body = BookRequest,
     responses(
@@ -70,17 +70,17 @@ pub async fn create(
         Error::DbInsert
     })?;
 
-    info!(id = %saved.id, title = %saved.title, "new book created");
+    info!(id = %saved.id, title = %saved.title, "new authn created");
 
     Ok((StatusCode::CREATED, Json(saved)))
 }
 
 #[utoipa::path(
     get,
-    path = "/v1/books/{id}",
+    path = "/v1/authns/{id}",
     tag = "Books",
     params(
-        ("id" = Uuid, Path, description = "The UUIDv7 identifier of the book")
+        ("id" = Uuid, Path, description = "The UUIDv7 identifier of the authn")
     ),
     responses(
         (status = 200, description = "A successful read", body = Book),
@@ -92,7 +92,7 @@ pub async fn read(
     State(mut state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<impl IntoResponse, Error> {
-    let book = Book::get_by_id(&mut state.db, &id).await.map_err(|err| {
+    let authn = Book::get_by_id(&mut state.db, &id).await.map_err(|err| {
         if err.is_record_not_found() {
             Error::NotFound
         } else {
@@ -101,16 +101,16 @@ pub async fn read(
         }
     })?;
 
-    Ok((StatusCode::OK, Json(book)))
+    Ok((StatusCode::OK, Json(authn)))
 }
 
 #[utoipa::path(
     put,
-    path = "/v1/books/{id}",
+    path = "/v1/authns/{id}",
     tag = "Books",
     request_body = BookRequest,
     params(
-        ("id" = Uuid, Path, description = "The UUIDv7 identifier of the book")
+        ("id" = Uuid, Path, description = "The UUIDv7 identifier of the authn")
     ),
     responses(
         (status = 200, description = "A successful update", body = Book),
@@ -125,7 +125,7 @@ pub async fn update(
     Path(id): Path<Uuid>,
     ValidatedJson(payload): ValidatedJson<BookRequest>,
 ) -> Result<impl IntoResponse, Error> {
-    let mut book = Book::get_by_id(&mut state.db, &id).await.map_err(|err| {
+    let mut authn = Book::get_by_id(&mut state.db, &id).await.map_err(|err| {
         if err.is_record_not_found() {
             Error::NotFound
         } else {
@@ -134,7 +134,7 @@ pub async fn update(
         }
     })?;
 
-    toasty::update!(book {
+    toasty::update!(authn {
         title: payload.title,
         description: payload.description,
         image_url: payload.image_url,
@@ -148,17 +148,17 @@ pub async fn update(
         Error::DbUpdate
     })?;
 
-    info!(id = %id, "book updated");
+    info!(id = %id, "authn updated");
 
-    Ok((StatusCode::OK, Json(book)))
+    Ok((StatusCode::OK, Json(authn)))
 }
 
 #[utoipa::path(
     delete,
-    path = "/v1/books/{id}",
+    path = "/v1/authns/{id}",
     tag = "Books",
     params(
-        ("id" = Uuid, Path, description = "The UUIDv7 identifier of the book")
+        ("id" = Uuid, Path, description = "The UUIDv7 identifier of the authn")
     ),
     responses(
         (status = 204, description = "A successful delete"),
@@ -174,7 +174,7 @@ pub async fn delete(
         Error::DbDelete
     })?;
 
-    info!(id = %id, "book deleted");
+    info!(id = %id, "authn deleted");
 
     Ok(StatusCode::NO_CONTENT)
 }

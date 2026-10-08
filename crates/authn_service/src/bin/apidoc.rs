@@ -1,6 +1,6 @@
 use std::{fs::File, io::Write, path::PathBuf};
 
-use book_service::build_api_doc;
+use authn_service::build_api_doc;
 
 fn main() {
     let yaml = build_api_doc().to_yaml().expect("Failed to generate OpenAPI YAML");

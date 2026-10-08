@@ -1,4 +1,4 @@
-CREATE TABLE "books" (
+CREATE TABLE "authns" (
     "created_at" TIMESTAMPTZ(6) NOT NULL,
     "updated_at" TIMESTAMPTZ(6) NOT NULL,
     "id" UUID NOT NULL,

@@ -6,11 +6,11 @@ server_port := "3001"
 
 # List available commands
 help:
-    @just --list --unsorted --list-heading $'📖BOOK-SERVICE\n'
+    @just --list --unsorted --list-heading $'🔐AUTHN-SERVICE\n'
 
 # Run lints (cargo fmt and clippy)
 lint:
-    cargo +nightly fmt --package book_service -- --check
+    cargo +nightly fmt --package authn_service -- --check
     cargo clippy --all-targets -- -D warnings
 
 # Run cargo check
@@ -21,9 +21,9 @@ check:
 build:
     cargo build --all-targets
 
-# Run cargo clean on the book_service package
+# Run cargo clean on the authn_service package
 clean:
-    cargo clean --package book_service
+    cargo clean --package authn_service
 
 # Run cargo test
 test:
@@ -53,4 +53,4 @@ docker *cmd:
 
 # Build production distroless image
 build-for-prod:
-    docker build --build-context workspace_root=../../ -t book-service-app -f prod.Dockerfile .
+    docker build --build-context workspace_root=../../ -t authn-service-app -f prod.Dockerfile .

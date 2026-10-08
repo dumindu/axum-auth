@@ -56,7 +56,7 @@ pub fn init(state: AppState) -> Router {
 
     Router::new()
         .route("/livez", get(livez))
-        .nest("/v1/books", app::book::router())
+        .nest("/v1/authns", app::book::router())
         .layer(DefaultBodyLimit::max(state.server_conf.default_body_limit))
         .layer(middleware)
         .with_state(state)

@@ -2,7 +2,7 @@
 help:
     @just --list --unsorted --list-prefix '  ' --list-heading $'🚀AXUM\n'
     @echo ''
-    @just --list --unsorted --list-prefix '    ' --list-heading $'  📖BOOK SERVICE\n' --justfile crates/book_service/justfile
+    @just --list --unsorted --list-prefix '    ' --list-heading $'  🔐AUTHN SERVICE\n' --justfile crates/authn_service/justfile
 
 # Run lints on the workspace members (cargo fmt and clippy)
 lint:
@@ -25,5 +25,5 @@ clean:
 test:
     cargo test --workspace
 
-# Forward to the BOOK-SERVICE
-mod book "crates/book_service"
+# Forward to the AUTHN-SERVICE
+mod authn "crates/authn_service"

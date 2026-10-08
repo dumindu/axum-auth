@@ -1,4 +1,4 @@
-use book_service::{AppConf, AppState, models::*, routes};
+use authn_service::{AppConf, AppState, models::*, routes};
 use mimalloc::MiMalloc;
 use tracing::info;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
     let conf = AppConf::init();
 
     let db = toasty::Db::builder()
-        .models(toasty::models!(Book, Author))
+        .models(toasty::models!(Book))
         .connect(&conf.db.to_database_url())
         .await?;
 

@@ -4,7 +4,7 @@ version = 1
 
 [[schema.tables]]
 id = 0
-name = "books"
+name = "authns"
 primary_key = { columns = [{ table = 0, index = 2 }], index = { table = 0, index = 0 } }
 
 [[schema.tables.columns]]
@@ -59,7 +59,7 @@ nullable = true
 
 [[schema.tables.indices]]
 id = { table = 0, index = 0 }
-name = "index_books_by_id"
+name = "index_authns_by_id"
 on = 0
 columns = [{ column = { table = 0, index = 2 }, op = "Eq", scope = "Partition" }]
 unique = true

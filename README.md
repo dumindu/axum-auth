@@ -30,14 +30,14 @@ $just
   build    # Run cargo build on the workspace members
   clean    # Run cargo clean on the workspace members
   test     # Run cargo test on the workspace members
-  book ... # Forward to the BOOK-SERVICE
+  authn ... # Forward to the AUTHN-SERVICE
 
-  📖BOOK SERVICE
+  🔐AUTHN SERVICE
     help           # List available commands
     lint           # Run lints (cargo fmt and clippy)
     check          # Run cargo check
     build          # Run cargo build
-    clean          # Run cargo clean on the book_service package
+    clean          # Run cargo clean on the authn_service package
     test           # Run cargo test
     migration *cmd # Run DB migrate
     app            # Run server app
@@ -48,7 +48,7 @@ $just
 
 ## Database Design
 
-To keep this simple, we use only a single database table named `books`.
+To keep this simple, we use only a single database table named `authns`.
 
 | Column Name    | Datatype    | Not Null | Primary Key |
 |----------------|-------------|----------|-------------|
@@ -75,11 +75,11 @@ To keep this simple, we use only a single database table named `books`.
 
 | Name        | HTTP Method | Route          |
 |-------------|-------------|----------------|
-| List Books  | GET         | /v1/books      |
-| Create Book | POST        | /v1/books      |
-| Read Book   | GET         | /v1/books/{id} |
-| Update Book | PUT         | /v1/books/{id} |
-| Delete Book | DELETE      | /v1/books/{id} |
+| List Books  | GET         | /v1/authns      |
+| Create Book | POST        | /v1/authns      |
+| Read Book   | GET         | /v1/authns/{id} |
+| Update Book | PUT         | /v1/authns/{id} |
+| Delete Book | DELETE      | /v1/authns/{id} |
 | Health      | GET         | /livez         |
 
 ### Request (`POST`/`PUT`)
@@ -127,7 +127,7 @@ To keep this simple, we use only a single database table named `books`.
 ```shell
 rest_api_workspace
 ├── crates
-│   ├── book_service
+│   ├── authn_service
 │   │   ├── src
 │   │   │   ├── bin
 │   │   │   │   ├── app.rs
@@ -135,7 +135,7 @@ rest_api_workspace
 │   │   │   │   └── apidoc.rs
 │   │   │   ├── app
 │   │   │   │   ├── mod.rs
-│   │   │   │   ├── book
+│   │   │   │   ├── authn
 │   │   │   │   │   ├── mod.rs
 │   │   │   │   │   ├── handler.rs
 │   │   │   │   │   └── payload.rs
@@ -143,7 +143,7 @@ rest_api_workspace
 │   │   │   │   └── validation.rs
 │   │   │   ├── models
 │   │   │   │   ├── mod.rs
-│   │   │   │   └── book.rs
+│   │   │   │   └── authn.rs
 │   │   │   ├── config.rs
 │   │   │   ├── errors.rs
 │   │   │   ├── state.rs
