@@ -1,0 +1,38 @@
+[package]
+name = "book_service"
+version = "0.1.0"
+edition = "2024"
+default-run = "app"
+
+[[bin]]
+name = "app"
+path = "src/bin/app.rs"
+
+[[bin]]
+name = "migration"
+path = "src/bin/migration.rs"
+
+[[bin]]
+name = "apidoc"
+path = "src/bin/apidoc.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = "1.0.104"
+axum = "0.8.9"
+envconfig = "0.11.1"
+garde = { version = "0.23.0", features = ["derive", "url"] }
+jiff = { version = "0.2.37", features = ["serde"] }
+mimalloc = "0.1.52"
+serde = "1.0.229"
+toasty = { version = "0.11.0", features = ["postgresql", "migration", "jiff"] }
+toasty-cli = "0.11.0"
+tokio = { version = "1.53.1", features = ["full"] }
+tower = "0.5.3"
+tower-http = { version = "0.7.1", features = ["cors", "request-id", "trace"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["json", "env-filter"] }
+utoipa = { version = "6.0.0", features = ["axum_extras", "jiff_0_2", "uuid", "yaml"] }
+uuid = { version = "1.26.1", features = ["v7", "fast-rng", "serde"] }

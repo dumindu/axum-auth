@@ -1,0 +1,293 @@
+openapi: 3.1.0
+info:
+  title: Book Service API
+  description: ''
+  license:
+    name: ''
+  version: 1.0.0
+servers:
+- url: http://localhost:3001
+  description: Development
+paths:
+  /v1/books:
+    get:
+      tags:
+      - Books
+      operationId: list
+      parameters:
+      - name: per_page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+          minimum: 0
+        example: 10
+      - name: page
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 1
+          minimum: 0
+        example: 1
+      responses:
+        '200':
+          description: A successful list read
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+        '500':
+          description: An internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+      - Books
+      operationId: create
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+        required: true
+      responses:
+        '201':
+          description: A successful create
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: An invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: An unprocessable payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: An internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/books/{id}:
+    get:
+      tags:
+      - Books
+      operationId: read
+      parameters:
+      - name: id
+        in: path
+        description: The UUIDv7 identifier of the book
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: A successful read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '404':
+          description: A record could not be found
+        '500':
+          description: An internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+      - Books
+      operationId: update
+      parameters:
+      - name: id
+        in: path
+        description: The UUIDv7 identifier of the book
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookRequest'
+        required: true
+      responses:
+        '200':
+          description: A successful update
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: An invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: A record could not be found
+        '422':
+          description: An unprocessable payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: An internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+      - Books
+      operationId: delete
+      parameters:
+      - name: id
+        in: path
+        description: The UUIDv7 identifier of the book
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '204':
+          description: A successful delete
+        '500':
+          description: An internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    Book:
+      type: object
+      required:
+      - created_at
+      - updated_at
+      - id
+      - published_date
+      - status
+      - title
+      properties:
+        created_at:
+          type: string
+          format: date-time
+          examples:
+          - 2027-01-01T00:00:00.123456Z
+        description:
+          type:
+          - string
+          - 'null'
+          examples:
+          - It is the seventh and final novel in the Harry Potter series
+        id:
+          type: string
+          format: uuid
+          examples:
+          - 01bbbbbb-bbbb-7bbb-8bbb-bbbbbbbbbbbb
+        image_url:
+          type:
+          - string
+          - 'null'
+          examples:
+          - https://upload.wikimedia.org/wikipedia/en/a/a9/Harry_Potter_and_the_Deathly_Hallows.jpg
+        published_date:
+          type: string
+          format: date
+          examples:
+          - 2007-07-21
+        status:
+          $ref: '#/components/schemas/BookStatus'
+        title:
+          type: string
+          examples:
+          - Harry Potter and the Deathly Hallows
+        updated_at:
+          type: string
+          format: date-time
+          examples:
+          - 2027-01-01T00:00:00.123456Z
+    BookRequest:
+      type: object
+      required:
+      - title
+      - published_date
+      - status
+      properties:
+        description:
+          type:
+          - string
+          - 'null'
+          examples:
+          - It is the seventh and final novel in the Harry Potter series
+        image_url:
+          type:
+          - string
+          - 'null'
+          examples:
+          - https://upload.wikimedia.org/wikipedia/en/a/a9/Harry_Potter_and_the_Deathly_Hallows.jpg
+        published_date:
+          type: string
+          format: date
+          examples:
+          - 2007-07-21
+        status:
+          $ref: '#/components/schemas/BookStatus'
+        title:
+          type: string
+          examples:
+          - Harry Potter and the Deathly Hallows
+          maxLength: 255
+          minLength: 1
+    BookStatus:
+      type: string
+      enum:
+      - pending
+      - verified
+    Error:
+      type: string
+      enum:
+      - DB_INSERT_FAILED
+      - DB_FETCH_FAILED
+      - DB_UPDATE_FAILED
+      - DB_DELETE_FAILED
+    ErrorResponse:
+      type: object
+      required:
+      - error
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+      examples:
+      - '{"error": "DB_FETCH_FAILED"}'
+    ValidationErrorResponse:
+      type: object
+      required:
+      - errors
+      properties:
+        errors:
+          type: object
+          additionalProperties:
+            type: string
+          propertyNames:
+            type: string
+      examples:
+      - '{ "errors": { "image_url": "Must be a valid URL", "title": "Must be at least 1 character long" } }'

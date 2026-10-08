@@ -1,0 +1,56 @@
+export CARGO_TARGET_DIR := "../../target"
+
+db_host := "localhost"
+db_port := "5433"
+server_port := "3001"
+
+# List available commands
+help:
+    @just --list --unsorted --list-heading $'📖BOOK-SERVICE\n'
+
+# Run lints (cargo fmt and clippy)
+lint:
+    cargo +nightly fmt --package book_service -- --check
+    cargo clippy --all-targets -- -D warnings
+
+# Run cargo check
+check:
+    cargo check
+
+# Run cargo build
+build:
+    cargo build --all-targets
+
+# Run cargo clean on the book_service package
+clean:
+    cargo clean --package book_service
+
+# Run cargo test
+test:
+    cargo test
+
+# Run server app
+app:
+    @export $(grep -v '^#' .env | xargs) && \
+    DB_HOST={{ db_host }} DB_PORT={{ db_port }} SERVER_PORT={{ server_port }} \
+    cargo run --bin app
+
+# Run DB migration CLI
+migration *cmd:
+    @export $(grep -v '^#' .env | xargs) && \
+    DB_HOST={{ db_host }} DB_PORT={{ db_port }} \
+    cargo run --bin migration -- migration {{cmd}}
+
+# Generate openapi.yaml
+apidoc:
+    cargo run --bin apidoc
+
+## =========================================================================
+
+# Run docker commands
+docker *cmd:
+    docker {{ cmd }}
+
+# Build production distroless image
+build-for-prod:
+    docker build --build-context workspace_root=../../ -t book-service-app -f prod.Dockerfile .
