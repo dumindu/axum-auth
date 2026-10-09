@@ -4,8 +4,8 @@ version = 1
 
 [[schema.tables]]
 id = 0
-name = "authns"
-primary_key = { columns = [{ table = 0, index = 2 }], index = { table = 0, index = 0 } }
+name = "registrations"
+primary_key = { columns = [{ table = 0, index = 5 }], index = { table = 0, index = 0 } }
 
 [[schema.tables.columns]]
 id = { table = 0, index = 0 }
@@ -15,59 +15,45 @@ storage_ty = { Timestamp = 6 }
 
 [[schema.tables.columns]]
 id = { table = 0, index = 1 }
-name = "updated_at"
+name = "verification_code_expires_at"
 ty = "Timestamp"
 storage_ty = { Timestamp = 6 }
 
 [[schema.tables.columns]]
 id = { table = 0, index = 2 }
-name = "id"
-ty = "Uuid"
-storage_ty = "Uuid"
-
-[[schema.tables.columns]]
-id = { table = 0, index = 3 }
-name = "published_date"
-ty = "Date"
-storage_ty = "Date"
-
-[[schema.tables.columns]]
-id = { table = 0, index = 4 }
-name = "status"
+name = "verification_attempts"
 ty = "U8"
 storage_ty = { UnsignedInteger = 1 }
 
 [[schema.tables.columns]]
+id = { table = 0, index = 3 }
+name = "verification_code_hash"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.columns]]
+id = { table = 0, index = 4 }
+name = "password_hash"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
 id = { table = 0, index = 5 }
-name = "title"
+name = "email"
 ty = "String"
 storage_ty = "Text"
-
-[[schema.tables.columns]]
-id = { table = 0, index = 6 }
-name = "description"
-ty = "String"
-storage_ty = "Text"
-nullable = true
-
-[[schema.tables.columns]]
-id = { table = 0, index = 7 }
-name = "image_url"
-ty = "String"
-storage_ty = "Text"
-nullable = true
 
 [[schema.tables.indices]]
 id = { table = 0, index = 0 }
-name = "index_authns_by_id"
+name = "index_registrations_by_email"
 on = 0
-columns = [{ column = { table = 0, index = 2 }, op = "Eq", scope = "Partition" }]
+columns = [{ column = { table = 0, index = 5 }, op = "Eq", scope = "Partition" }]
 unique = true
 primary_key = true
 
 [[schema.tables]]
 id = 1
-name = "authors"
+name = "users"
 primary_key = { columns = [{ table = 1, index = 2 }], index = { table = 1, index = 0 } }
 
 [[schema.tables.columns]]
@@ -90,21 +76,438 @@ storage_ty = "Uuid"
 
 [[schema.tables.columns]]
 id = { table = 1, index = 3 }
-name = "name"
-ty = "String"
-storage_ty = "Text"
+name = "status"
+ty = "U8"
+storage_ty = { UnsignedInteger = 1 }
 
 [[schema.tables.columns]]
 id = { table = 1, index = 4 }
-name = "description"
+name = "email"
 ty = "String"
 storage_ty = "Text"
-nullable = true
 
 [[schema.tables.indices]]
 id = { table = 1, index = 0 }
-name = "index_authors_by_id"
+name = "index_users_by_id"
 on = 1
 columns = [{ column = { table = 1, index = 2 }, op = "Eq", scope = "Partition" }]
 unique = true
 primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 1, index = 1 }
+name = "index_users_by_email"
+on = 1
+columns = [{ column = { table = 1, index = 4 }, op = "Eq", scope = "Partition" }]
+unique = true
+
+[[schema.tables]]
+id = 2
+name = "user_passwords"
+primary_key = { columns = [{ table = 2, index = 2 }], index = { table = 2, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 2, index = 0 }
+name = "created_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 2, index = 1 }
+name = "updated_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 2, index = 2 }
+name = "user_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 3 }
+name = "password_hash"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.indices]]
+id = { table = 2, index = 0 }
+name = "index_user_passwords_by_user_id"
+on = 2
+columns = [{ column = { table = 2, index = 2 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables]]
+id = 3
+name = "user_devices"
+primary_key = { columns = [{ table = 3, index = 2 }], index = { table = 3, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 3, index = 0 }
+name = "created_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 3, index = 1 }
+name = "last_used_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 3, index = 2 }
+name = "id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 3 }
+name = "user_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 4 }
+name = "device_name"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 5 }
+name = "device_hash"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 6 }
+name = "revoked_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+nullable = true
+
+[[schema.tables.indices]]
+id = { table = 3, index = 0 }
+name = "index_user_devices_by_id"
+on = 3
+columns = [{ column = { table = 3, index = 2 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 3, index = 1 }
+name = "index_user_devices_by_user_id_and_device_hash"
+on = 3
+columns = [{ column = { table = 3, index = 3 }, op = "Eq", scope = "Partition" }, { column = { table = 3, index = 5 }, op = "Eq", scope = "Local" }]
+unique = true
+
+[[schema.tables]]
+id = 4
+name = "user_passkeys"
+primary_key = { columns = [{ table = 4, index = 2 }], index = { table = 4, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 4, index = 0 }
+name = "created_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 4, index = 1 }
+name = "last_used_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 4, index = 2 }
+name = "id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 4, index = 3 }
+name = "user_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 4, index = 4 }
+name = "signature_counter"
+ty = "U8"
+storage_ty = { UnsignedInteger = 1 }
+
+[[schema.tables.columns]]
+id = { table = 4, index = 5 }
+name = "credential_id"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.columns]]
+id = { table = 4, index = 6 }
+name = "public_key"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.indices]]
+id = { table = 4, index = 0 }
+name = "index_user_passkeys_by_id"
+on = 4
+columns = [{ column = { table = 4, index = 2 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 4, index = 1 }
+name = "index_user_passkeys_by_credential_id"
+on = 4
+columns = [{ column = { table = 4, index = 5 }, op = "Eq", scope = "Partition" }]
+unique = true
+
+[[schema.tables]]
+id = 5
+name = "webauthn_challenges"
+primary_key = { columns = [{ table = 5, index = 4 }], index = { table = 5, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 5, index = 0 }
+name = "created_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 5, index = 1 }
+name = "expires_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 5, index = 2 }
+name = "user_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+nullable = true
+
+[[schema.tables.columns]]
+id = { table = 5, index = 3 }
+name = "device_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+nullable = true
+
+[[schema.tables.columns]]
+id = { table = 5, index = 4 }
+name = "challenge_token"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.columns]]
+id = { table = 5, index = 5 }
+name = "challenge_type"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.indices]]
+id = { table = 5, index = 0 }
+name = "index_webauthn_challenges_by_challenge_token"
+on = 5
+columns = [{ column = { table = 5, index = 4 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 5, index = 1 }
+name = "index_webauthn_challenges_by_expires_at"
+on = 5
+columns = [{ column = { table = 5, index = 1 }, op = "Eq", scope = "Partition" }]
+
+[[schema.tables]]
+id = 6
+name = "user_identities"
+primary_key = { columns = [{ table = 6, index = 1 }], index = { table = 6, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 6, index = 0 }
+name = "created_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 6, index = 1 }
+name = "id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 6, index = 2 }
+name = "user_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 6, index = 3 }
+name = "provider"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 6, index = 4 }
+name = "provider_sub_id"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.indices]]
+id = { table = 6, index = 0 }
+name = "index_user_identities_by_id"
+on = 6
+columns = [{ column = { table = 6, index = 1 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 6, index = 1 }
+name = "index_user_identities_by_provider_and_provider_sub_id"
+on = 6
+columns = [{ column = { table = 6, index = 3 }, op = "Eq", scope = "Partition" }, { column = { table = 6, index = 4 }, op = "Eq", scope = "Local" }]
+unique = true
+
+[[schema.tables.indices]]
+id = { table = 6, index = 2 }
+name = "index_user_identities_by_user_id"
+on = 6
+columns = [{ column = { table = 6, index = 2 }, op = "Eq", scope = "Partition" }]
+
+[[schema.tables]]
+id = 7
+name = "oauth_challenges"
+primary_key = { columns = [{ table = 7, index = 2 }], index = { table = 7, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 7, index = 0 }
+name = "created_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 7, index = 1 }
+name = "expires_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 7, index = 2 }
+name = "state"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 7, index = 3 }
+name = "nonce"
+ty = "Uuid"
+storage_ty = "Uuid"
+nullable = true
+
+[[schema.tables.columns]]
+id = { table = 7, index = 4 }
+name = "pkce_code_verifier"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 7, index = 5 }
+name = "client_redirect_uri"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 7, index = 6 }
+name = "provider"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 7, index = 7 }
+name = "flow_type"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.indices]]
+id = { table = 7, index = 0 }
+name = "index_oauth_challenges_by_state"
+on = 7
+columns = [{ column = { table = 7, index = 2 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables]]
+id = 8
+name = "refresh_tokens"
+primary_key = { columns = [{ table = 8, index = 2 }], index = { table = 8, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 8, index = 0 }
+name = "created_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 8, index = 1 }
+name = "expires_at"
+ty = "Timestamp"
+storage_ty = { Timestamp = 6 }
+
+[[schema.tables.columns]]
+id = { table = 8, index = 2 }
+name = "id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 8, index = 3 }
+name = "user_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 8, index = 4 }
+name = "device_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 8, index = 5 }
+name = "token_family_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 8, index = 6 }
+name = "is_revoked"
+ty = "Bool"
+storage_ty = "Boolean"
+
+[[schema.tables.columns]]
+id = { table = 8, index = 7 }
+name = "token_hash"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.indices]]
+id = { table = 8, index = 0 }
+name = "index_refresh_tokens_by_id"
+on = 8
+columns = [{ column = { table = 8, index = 2 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 8, index = 1 }
+name = "index_refresh_tokens_by_token_hash"
+on = 8
+columns = [{ column = { table = 8, index = 7 }, op = "Eq", scope = "Partition" }]
+unique = true
+
+[[schema.tables.indices]]
+id = { table = 8, index = 2 }
+name = "index_refresh_tokens_by_token_family_id"
+on = 8
+columns = [{ column = { table = 8, index = 5 }, op = "Eq", scope = "Partition" }]
