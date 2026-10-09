@@ -11,7 +11,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "3001:3000"
+      - "3000:3000"
     command: [ "sh", "-c", "/service/migration migration apply && /service/app" ]
     restart: always
 
@@ -23,7 +23,7 @@ services:
       POSTGRES_USER: authn-service-user
       POSTGRES_PASSWORD: authn-service-pass
     ports:
-      - "5433:5432"
+      - "5432:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U authn-service-user -d authn-service-db" ]
       interval: 3s

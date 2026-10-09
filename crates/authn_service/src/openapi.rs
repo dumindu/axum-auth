@@ -2,9 +2,9 @@ use utoipa::{OpenApi, openapi::OpenApi as OpenApiDoc};
 
 #[derive(OpenApi)]
 #[openapi(
-    info(title = "Book Service API", version = "1.0.0"),
+    info(title = "Authn Service API", version = "1.0.0"),
     servers(
-        (url = "http://localhost:3001", description = "Development")
+        (url = "http://localhost:3000", description = "Development")
     ),
     components(schemas(
         crate::models::Book,

@@ -1,8 +1,6 @@
 export CARGO_TARGET_DIR := "../../target"
 
 db_host := "localhost"
-db_port := "5433"
-server_port := "3001"
 
 # List available commands
 help:
@@ -32,13 +30,13 @@ test:
 # Run server app
 app:
     @export $(grep -v '^#' .env | xargs) && \
-    DB_HOST={{ db_host }} DB_PORT={{ db_port }} SERVER_PORT={{ server_port }} \
+    DB_HOST={{ db_host }} \
     cargo run --bin app
 
 # Run DB migration CLI
 migration *cmd:
     @export $(grep -v '^#' .env | xargs) && \
-    DB_HOST={{ db_host }} DB_PORT={{ db_port }} \
+    DB_HOST={{ db_host }} \
     cargo run --bin migration -- migration {{cmd}}
 
 # Generate openapi.yaml

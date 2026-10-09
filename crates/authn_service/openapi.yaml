@@ -1,12 +1,12 @@
 openapi: 3.1.0
 info:
-  title: Book Service API
+  title: Authn Service API
   description: ''
   license:
     name: ''
   version: 1.0.0
 servers:
-- url: http://localhost:3001
+- url: http://localhost:3000
   description: Development
 paths:
   /v1/authns:
