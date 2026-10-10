@@ -16,5 +16,6 @@ pub struct ApiDoc;
 pub fn build_api_doc() -> OpenApiDoc {
     let mut openapi = ApiDoc::openapi();
     openapi.merge(crate::app::register::RegisterApi::openapi());
+    openapi.merge(crate::app::login::LoginApi::openapi());
     openapi
 }

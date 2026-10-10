@@ -9,6 +9,55 @@ servers:
 - url: http://localhost:3000
   description: Development
 paths:
+  /v1/login:
+    post:
+      tags:
+      - auth
+      operationId: login
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      responses:
+        '200':
+          description: A successful login
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: Secure HTTP-only refresh_token session cookie; `Max-Age=604800`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccessTokenResponse'
+        '400':
+          description: An invalid payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: An invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: A forbidden request
+        '422':
+          description: An unprocessable payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '500':
+          description: An internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /v1/register:
     post:
       tags:
@@ -29,8 +78,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: A forbidden request
         '409':
-          description: An invalid payload
+          description: A duplicate entity
           content:
             application/json:
               schema:
@@ -49,6 +100,13 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
+    AccessTokenResponse:
+      type: object
+      required:
+      - access_token
+      properties:
+        access_token:
+          type: string
     Error:
       type: string
       enum:
@@ -56,9 +114,13 @@ components:
       - DB_FETCH_FAILED
       - DB_UPDATE_FAILED
       - DB_DELETE_FAILED
+      - DB_TRANSACTION_BEGIN_FAILED
+      - DB_TRANSACTION_COMMIT_FAILED
       - PASSWORD_HASH_CONTEXT_FAILED
       - PASSWORD_HASH_ACTION_FAILED
       - TIME_GEN_FAILED
+      - INVALID_GRANT
+      - INVALID_CREDENTIALS
       - DUPLICATE_ENTITY
     ErrorResponse:
       type: object
@@ -69,6 +131,29 @@ components:
           $ref: '#/components/schemas/Error'
       examples:
       - '{"error": "DB_FETCH_FAILED"}'
+    LoginRequest:
+      type: object
+      required:
+      - email
+      - password
+      - device_name
+      properties:
+        device_name:
+          type: string
+          examples:
+          - iPhone 18 Pro
+          maxLength: 255
+          minLength: 5
+        email:
+          type: string
+          examples:
+          - user@mail.com
+        password:
+          type: string
+          examples:
+          - P@ssword123!
+          maxLength: 128
+          minLength: 12
     RegistrationRequest:
       type: object
       required:

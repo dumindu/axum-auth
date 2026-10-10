@@ -23,12 +23,21 @@ pub enum Error {
     DbUpdate,
     #[schema(rename = "DB_DELETE_FAILED")]
     DbDelete,
+    #[schema(rename = "DB_TRANSACTION_BEGIN_FAILED")]
+    DbTransactionBegin,
+    #[schema(rename = "DB_TRANSACTION_COMMIT_FAILED")]
+    DbTransactionCommit,
     #[schema(rename = "PASSWORD_HASH_CONTEXT_FAILED")]
     PasswordHashContext,
     #[schema(rename = "PASSWORD_HASH_ACTION_FAILED")]
     PasswordHashAction,
     #[schema(rename = "TIME_GEN_FAILED")]
     TimeGen,
+    // 401
+    #[schema(rename = "INVALID_GRANT")]
+    InvalidGrant,
+    #[schema(rename = "INVALID_CREDENTIALS")]
+    InvalidCredentials,
     // 403
     #[serde(skip)]
     Forbidden,
@@ -56,6 +65,13 @@ impl IntoResponse for Error {
             Error::DbDelete => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"DB_DELETE_FAILED\"}")
             }
+            Error::DbTransactionBegin => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"DB_TRANSACTION_BEGIN_FAILED\"}")
+            }
+            Error::DbTransactionCommit => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                b"{\"error\": \"DB_TRANSACTION_COMMIT_FAILED\"}",
+            ),
             Error::PasswordHashContext => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 b"{\"error\": \"PASSWORD_HASH_CONTEXT_FAILED\"}",
@@ -65,6 +81,11 @@ impl IntoResponse for Error {
             }
             Error::TimeGen => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"TIME_GEN_FAILED\"}")
+            }
+            // 401
+            Error::InvalidGrant => (StatusCode::UNAUTHORIZED, b"{\"error\": \"INVALID_GRANT\"}"),
+            Error::InvalidCredentials => {
+                (StatusCode::UNAUTHORIZED, b"{\"error\": \"INVALID_CREDENTIALS\"}")
             }
             // 403
             Error::Forbidden => (StatusCode::FORBIDDEN, b""),

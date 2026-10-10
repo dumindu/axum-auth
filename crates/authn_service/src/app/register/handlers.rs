@@ -17,7 +17,8 @@ use crate::{
     responses(
         (status = 200, description = "A successful registration"),
         (status = 400, description = "An invalid payload", body = ErrorResponse),
-        (status = 409, description = "An invalid payload", body = ErrorResponse),
+        (status = 403, description = "A forbidden request"),
+        (status = 409, description = "A duplicate entity", body = ErrorResponse),
         (status = 422, description = "An unprocessable payload", body = ValidationErrorResponse),
         (status = 500, description = "An internal failure", body = ErrorResponse)
     )

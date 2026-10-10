@@ -89,4 +89,6 @@ impl SecretString {
 pub struct SecretsConf {
     #[envconfig(from = "PASSWORD_PEPPER")]
     pub password_pepper: SecretString,
+    #[envconfig(from = "DEVICE_ID_HASH_SALT")]
+    pub device_id_hash_salt: SecretString,
 }
