@@ -1,3 +1,5 @@
+use std::{convert::Infallible, str::FromStr};
+
 use envconfig::Envconfig;
 #[derive(Envconfig)]
 pub struct AppConf {
@@ -6,6 +8,9 @@ pub struct AppConf {
 
     #[envconfig(nested)]
     pub db: DbConf,
+
+    #[envconfig(nested)]
+    pub secrets: SecretsConf,
 }
 
 impl AppConf {
@@ -61,4 +66,27 @@ impl DbConf {
             self.protocol, self.user, self.password, self.host, self.port, self.db_name
         )
     }
+}
+
+#[derive(Clone)]
+pub struct SecretString(String);
+
+impl FromStr for SecretString {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(SecretString(s.to_string()))
+    }
+}
+
+impl SecretString {
+    pub fn expose_str(&self) -> &str {
+        &self.0
+    }
+}
+
+#[derive(Clone, Envconfig)]
+pub struct SecretsConf {
+    #[envconfig(from = "PASSWORD_PEPPER")]
+    pub password_pepper: SecretString,
 }

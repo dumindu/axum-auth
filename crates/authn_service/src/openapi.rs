@@ -7,7 +7,6 @@ use utoipa::{OpenApi, openapi::OpenApi as OpenApiDoc};
         (url = "http://localhost:3000", description = "Development")
     ),
     components(schemas(
-        crate::models::Book,
         crate::errors::ErrorResponse,
         crate::app::ValidationErrorResponse
     )),
@@ -16,6 +15,6 @@ pub struct ApiDoc;
 
 pub fn build_api_doc() -> OpenApiDoc {
     let mut openapi = ApiDoc::openapi();
-    openapi.merge(crate::app::book::BookApi::openapi());
+    openapi.merge(crate::app::register::RegisterApi::openapi());
     openapi
 }

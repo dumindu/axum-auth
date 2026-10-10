@@ -12,6 +12,7 @@ pub struct UserDevice {
     #[schema(value_type = String, format = DateTime, examples("2027-01-01T00:00:00.123456Z"))]
     pub created_at: Timestamp,
 
+    #[update(Timestamp::now())]
     #[schema(value_type = String, format = DateTime, examples("2027-01-01T00:00:00.123456Z"))]
     pub last_used_at: Timestamp,
 

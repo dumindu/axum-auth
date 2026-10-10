@@ -20,13 +20,24 @@ async fn main() -> anyhow::Result<()> {
     let conf = AppConf::init();
 
     let db = toasty::Db::builder()
-        .models(toasty::models!(Book))
+        .models(toasty::models!(
+            OauthChallenge,
+            RefreshToken,
+            Registration,
+            SecurityAuditLog,
+            User,
+            UserDevice,
+            UserIdentity,
+            UserPasskey,
+            UserPassword,
+            WebauthnChallenge
+        ))
         .connect(&conf.db.to_database_url())
         .await?;
 
     let addr = conf.server.to_addr();
-    let server_conf = conf.server;
-    let state = AppState { db, server_conf };
+    let (server_conf, secrets_conf) = (conf.server, conf.secrets);
+    let state = AppState { db, server_conf, secrets_conf };
 
     info!(addr = %addr, "Starting server");
 
