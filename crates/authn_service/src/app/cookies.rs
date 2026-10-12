@@ -17,7 +17,7 @@ pub fn device_id<'a, 'b>(device_id: &'a Uuid) -> Cookie<'b> {
         .http_only(true)
         .secure(true)
         .path("/")
-        .max_age(Duration::days(365))
+        .max_age(Duration::days(90))
         .same_site(Strict)
         .build()
 }

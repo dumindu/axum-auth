@@ -1,4 +1,4 @@
-use axum::{extract::State, response::IntoResponse};
+use axum::{Json, extract::State, response::IntoResponse};
 use axum_extra::extract::cookie::CookieJar;
 use jiff::{SignedDuration, Timestamp};
 use tracing::error;
@@ -6,9 +6,12 @@ use uuid::Uuid;
 
 use super::payload::LoginRequest;
 use crate::{
-    app::{ValidatedJson, ValidationErrorResponse, cookies, password, sha_hashes},
+    app::{
+        LoginResponse, ValidatedJson, ValidationErrorResponse, cookies, jwt_token, password,
+        sha_hashes,
+    },
     errors::{Error, Error::TimeGen, ErrorResponse},
-    models::{AccessTokenResponse, RefreshToken, User, UserDevice, UserStatus},
+    models::{RefreshToken, User, UserDevice, UserStatus},
     state::AppState,
 };
 
@@ -19,10 +22,11 @@ use crate::{
     request_body = LoginRequest,
     responses(
         (
-            status = 200, description = "A successful login", body = AccessTokenResponse,
+            status = 200, description = "A successful login", body = LoginResponse,
             headers(
-                ("Set-Cookie" = String, description = "Secure HTTP-only device_id cookie"),
-                ("Set-Cookie" = String, description = "Secure HTTP-only refresh_token session cookie; `Max-Age=604800`"),
+                ("Set-Cookie" = String, description = "Returns two cookies:\n\
+                1. refresh_token; Secure;HTTP-only;session cookie;Max-Age=7days\n\
+                2. device_id; Secure;HTTP-only;Max-Age=90days"),
             )
         ),
         (status = 400, description = "An invalid payload", body = ErrorResponse),
@@ -37,7 +41,7 @@ pub async fn login(
     mut jar: CookieJar,
     ValidatedJson(payload): ValidatedJson<LoginRequest>,
 ) -> Result<impl IntoResponse, Error> {
-    let email = &payload.email.to_lowercase();
+    let email = &payload.email.to_ascii_lowercase();
 
     let user = User::filter_by_email(email)
         .include(User::fields().password())
@@ -51,6 +55,7 @@ pub async fn login(
                 Error::DbFetch
             }
         })?;
+    let user_id = &user.id;
 
     if user.status.ne(&UserStatus::Active) {
         return Err(Error::Forbidden);
@@ -67,7 +72,7 @@ pub async fn login(
         Some(sha_hashes::device_hash(device_id_hash_salt, &device_id))
     });
     let user_device = match device_hash {
-        Some(hash) => UserDevice::filter_by_user_id_and_device_hash(user.id, hash)
+        Some(hash) => UserDevice::filter_by_user_id_and_device_hash(user_id, hash)
             .first()
             .exec(&mut state.db)
             .await
@@ -97,7 +102,7 @@ pub async fn login(
             let device_hash = sha_hashes::device_hash(device_id_hash_salt, &device_id);
 
             let new_device = toasty::create!(UserDevice {
-                user_id: user.id,
+                user_id,
                 device_hash,
                 device_name: &payload.device_name,
             })
@@ -112,6 +117,7 @@ pub async fn login(
             new_device
         }
     };
+    let device_id = &user_device.id;
 
     let raw_refresh_token = blake3::hash(Uuid::new_v4().as_bytes()).to_string();
     let refresh_token_expires_at =
@@ -119,8 +125,8 @@ pub async fn login(
 
     let refresh_token = toasty::create!(RefreshToken {
         expires_at: refresh_token_expires_at,
-        user_id: user.id,
-        device_id: user_device.id,
+        user_id,
+        device_id,
         token_hash: sha_hashes::refresh_token_hash(&raw_refresh_token),
     })
     .exec(&mut tx)
@@ -129,13 +135,21 @@ pub async fn login(
         error!(target: "database", "failed to insert: {err:?}");
         Error::DbInsert
     })?;
+    let token_id = &refresh_token.token_family_id;
 
-    jar = jar.add(cookies::refresh_token(&refresh_token.token_family_id, &raw_refresh_token));
+    jar = jar.add(cookies::refresh_token(token_id, &raw_refresh_token));
 
     tx.commit().await.map_err(|err| {
         error!(target: "database", "failed to commit transaction: {err:?}");
         Error::DbTransactionCommit
     })?;
 
-    Ok(jar)
+    let response =
+        jwt_token::generate_token_response(&state.jwt_token_conf, user_id, token_id, device_id)
+            .map_err(|err| {
+                error!(target: "security", "failed to generate jwt token: {err:?}");
+                Error::JwtGen
+            })?;
+
+    Ok((jar, Json(response)))
 }

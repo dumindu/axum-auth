@@ -1,6 +1,8 @@
 use std::{convert::Infallible, str::FromStr};
 
 use envconfig::Envconfig;
+use jiff::SignedDuration;
+
 #[derive(Envconfig)]
 pub struct AppConf {
     #[envconfig(nested)]
@@ -11,6 +13,9 @@ pub struct AppConf {
 
     #[envconfig(nested)]
     pub secrets: SecretsConf,
+
+    #[envconfig(nested)]
+    pub jwt: JwtTokenConf,
 }
 
 impl AppConf {
@@ -68,6 +73,29 @@ impl DbConf {
     }
 }
 
+#[derive(Clone, Envconfig)]
+pub struct SecretsConf {
+    #[envconfig(from = "PASSWORD_PEPPER")]
+    pub password_pepper: SecretString,
+    #[envconfig(from = "DEVICE_ID_HASH_SALT")]
+    pub device_id_hash_salt: SecretString,
+}
+
+#[derive(Clone, Envconfig)]
+pub struct JwtTokenConf {
+    #[envconfig(from = "JWT_TOKEN_PRIVATE_KEY")]
+    pub private_key: SecretString,
+    #[envconfig(from = "JWT_TOKEN_PUBLIC_KEY")]
+    pub public_key: SecretString,
+    #[envconfig(from = "JWT_TOKEN_ISSUER")]
+    pub issuer: String,
+    #[envconfig(from = "JWT_TOKEN_AUDIENCE")]
+    pub audience: StringVec,
+    #[envconfig(from = "JWT_TOKEN_LIFETIME")]
+    pub lifetime: Duration,
+}
+
+// Custom type: SecretString
 #[derive(Clone)]
 pub struct SecretString(String);
 
@@ -85,10 +113,32 @@ impl SecretString {
     }
 }
 
-#[derive(Clone, Envconfig)]
-pub struct SecretsConf {
-    #[envconfig(from = "PASSWORD_PEPPER")]
-    pub password_pepper: SecretString,
-    #[envconfig(from = "DEVICE_ID_HASH_SALT")]
-    pub device_id_hash_salt: SecretString,
+// Custom type: StringArray
+#[derive(Clone)]
+pub struct StringVec(pub Vec<String>);
+
+impl FromStr for StringVec {
+    type Err = Infallible;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let items = s
+            .split(',')
+            .map(|item| item.trim().to_string())
+            .filter(|item| !item.is_empty())
+            .collect();
+        Ok(StringVec(items))
+    }
+}
+
+// Custom type: Duration
+#[derive(Clone)]
+pub struct Duration(pub SignedDuration);
+
+impl FromStr for Duration {
+    type Err = jiff::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let parsed = s.parse::<SignedDuration>()?;
+        Ok(Duration(parsed))
+    }
 }

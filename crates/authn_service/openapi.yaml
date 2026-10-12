@@ -27,11 +27,14 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-              description: Secure HTTP-only refresh_token session cookie; `Max-Age=604800`
+              description: |-
+                Returns two cookies:
+                1. refresh_token; Secure;HTTP-only;session cookie;Max-Age=7days
+                2. device_id; Secure;HTTP-only;Max-Age=90days
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AccessTokenResponse'
+                $ref: '#/components/schemas/LoginResponse'
         '400':
           description: An invalid payload
           content:
@@ -70,7 +73,7 @@ paths:
               $ref: '#/components/schemas/RegistrationRequest'
         required: true
       responses:
-        '200':
+        '201':
           description: A successful registration
         '400':
           description: An invalid payload
@@ -100,13 +103,6 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
-    AccessTokenResponse:
-      type: object
-      required:
-      - access_token
-      properties:
-        access_token:
-          type: string
     Error:
       type: string
       enum:
@@ -118,6 +114,7 @@ components:
       - DB_TRANSACTION_COMMIT_FAILED
       - PASSWORD_HASH_CONTEXT_FAILED
       - PASSWORD_HASH_ACTION_FAILED
+      - JWT_GEN_FAILED
       - TIME_GEN_FAILED
       - INVALID_GRANT
       - INVALID_CREDENTIALS
@@ -154,6 +151,20 @@ components:
           - P@ssword123!
           maxLength: 128
           minLength: 12
+    LoginResponse:
+      type: object
+      required:
+      - access_token
+      - token_type
+      - expires_in
+      properties:
+        access_token:
+          type: string
+        expires_in:
+          type: integer
+          format: int64
+        token_type:
+          type: string
     RegistrationRequest:
       type: object
       required:

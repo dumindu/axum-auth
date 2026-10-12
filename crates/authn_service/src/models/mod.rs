@@ -1,4 +1,3 @@
-mod access_token;
 mod oauth_challenge;
 mod refresh_token;
 mod registration;
@@ -10,7 +9,6 @@ mod user_passkey;
 mod user_password;
 mod webauthn_challenge;
 
-pub use access_token::AccessTokenResponse;
 pub use oauth_challenge::OauthChallenge;
 pub use refresh_token::RefreshToken;
 pub use registration::Registration;

@@ -1,4 +1,4 @@
-use axum::{extract::State, response::IntoResponse};
+use axum::{extract::State, http::StatusCode, response::IntoResponse};
 use tracing::{error, info};
 
 use super::payload::RegistrationRequest;
@@ -15,7 +15,7 @@ use crate::{
     tag = "auth",
     request_body = RegistrationRequest,
     responses(
-        (status = 200, description = "A successful registration"),
+        (status = 201, description = "A successful registration"),
         (status = 400, description = "An invalid payload", body = ErrorResponse),
         (status = 403, description = "A forbidden request"),
         (status = 409, description = "A duplicate entity", body = ErrorResponse),
@@ -27,7 +27,7 @@ pub async fn register(
     State(mut state): State<AppState>,
     ValidatedJson(payload): ValidatedJson<RegistrationRequest>,
 ) -> Result<impl IntoResponse, Error> {
-    let email = &payload.email.to_lowercase();
+    let email = &payload.email.to_ascii_lowercase();
 
     let user_status = User::filter_by_email(email)
         .select(User::fields().status())
@@ -85,5 +85,5 @@ pub async fn register(
         Error::DbInsert
     })?;
 
-    Ok(())
+    Ok(StatusCode::CREATED)
 }

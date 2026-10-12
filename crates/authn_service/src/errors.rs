@@ -31,6 +31,8 @@ pub enum Error {
     PasswordHashContext,
     #[schema(rename = "PASSWORD_HASH_ACTION_FAILED")]
     PasswordHashAction,
+    #[schema(rename = "JWT_GEN_FAILED")]
+    JwtGen,
     #[schema(rename = "TIME_GEN_FAILED")]
     TimeGen,
     // 401
@@ -78,6 +80,9 @@ impl IntoResponse for Error {
             ),
             Error::PasswordHashAction => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"PASSWORD_HASH_ACTION_FAILED\"}")
+            }
+            Error::JwtGen => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"Jwt_GEN_FAILED\"}")
             }
             Error::TimeGen => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"TIME_GEN_FAILED\"}")
