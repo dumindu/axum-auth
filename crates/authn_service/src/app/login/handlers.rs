@@ -90,6 +90,7 @@ pub async fn login(
         Error::DbTransactionBegin
     })?;
 
+    let cookies_config = &state.cookies_conf;
     let user_device = match user_device {
         Some(mut existing_device) => {
             existing_device.update().exec(&mut tx).await.map_err(|err| {
@@ -115,15 +116,16 @@ pub async fn login(
                 Error::DbInsert
             })?;
 
-            jar = jar.add(cookies::device_id(&device_id));
+            jar = jar.add(cookies::device_id(cookies_config, &device_id));
             new_device
         }
     };
     let device_id = &user_device.id;
 
     let raw_refresh_token = blake3::hash(Uuid::new_v4().as_bytes()).to_string();
-    let refresh_token_expires_at =
-        Timestamp::now().checked_add(SignedDuration::from_hours(24 * 7)).map_err(|_| TimeGen)?;
+    let refresh_token_expires_at = Timestamp::now()
+        .checked_add(SignedDuration::from_hours(24 * cookies_config.refresh_token_lifetime_in_days))
+        .map_err(|_| TimeGen)?;
 
     let refresh_token = toasty::create!(RefreshToken {
         expires_at: refresh_token_expires_at,
@@ -137,21 +139,27 @@ pub async fn login(
         error!(target: "database", "failed to insert: {err:?}");
         Error::DbInsert
     })?;
-    let token_id = &refresh_token.token_family_id;
+    let token_id = &refresh_token.access_token_id;
+    let token_family_id = &refresh_token.token_family_id;
 
-    jar = jar.add(cookies::refresh_token(token_id, &raw_refresh_token));
+    jar = jar.add(cookies::refresh_token(cookies_config, token_family_id, &raw_refresh_token));
 
     tx.commit().await.map_err(|err| {
         error!(target: "database", "failed to commit transaction: {err:?}");
         Error::DbTransactionCommit
     })?;
 
-    let response =
-        jwt_token::generate_token_response(&state.jwt_token_conf, user_id, token_id, device_id)
-            .map_err(|err| {
-                error!(target: "security", "failed to generate jwt token: {err:?}");
-                Error::JwtGen
-            })?;
+    let response = jwt_token::generate_token_response(
+        &state.jwt_token_conf,
+        user_id,
+        device_id,
+        token_id,
+        token_family_id,
+    )
+    .map_err(|err| {
+        error!(target: "security", "failed to generate jwt token: {err:?}");
+        Error::JwtGen
+    })?;
 
     Ok((jar, Json(response)))
 }

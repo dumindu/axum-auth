@@ -11,12 +11,15 @@ pub struct RefreshToken {
     pub expires_at: Timestamp,
 
     #[key]
-    #[auto(uuid(v7))]
-    pub id: Uuid,
+    #[auto]
+    pub id: u64,
 
     pub user_id: Uuid,
 
     pub device_id: Uuid,
+
+    #[auto(uuid(v4))]
+    pub access_token_id: Uuid,
 
     #[auto(uuid(v4))]
     pub token_family_id: Uuid,

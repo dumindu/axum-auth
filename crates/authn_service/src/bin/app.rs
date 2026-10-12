@@ -36,8 +36,13 @@ async fn main() -> anyhow::Result<()> {
         .await?;
 
     let addr = conf.server.to_addr();
-    let (server_conf, secrets_conf, jwt_token_conf) = (conf.server, conf.secrets, conf.jwt);
-    let state = AppState { db, server_conf, secrets_conf, jwt_token_conf };
+    let state = AppState {
+        db,
+        server_conf: conf.server,
+        secrets_conf: conf.secrets,
+        jwt_token_conf: conf.jwt,
+        cookies_conf: conf.cookies,
+    };
 
     info!(addr = %addr, "Starting server");
 

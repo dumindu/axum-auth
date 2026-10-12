@@ -41,6 +41,9 @@ pub struct Claims<'a> {
     #[serde(rename = "jti")]
     pub id: &'a Uuid,
 
+    #[serde(rename = "jtf")]
+    pub family_id: &'a Uuid,
+
     #[serde(rename = "did")]
     pub device_id: &'a Uuid,
 }
@@ -53,8 +56,9 @@ fn base64_url_json_encode<T: Serialize>(obj: &T) -> Result<String, anyhow::Error
 pub fn generate_token_response(
     conf: &JwtTokenConf,
     user_id: &Uuid,
-    token_id: &Uuid,
     device_id: &Uuid,
+    token_id: &Uuid,
+    token_family_id: &Uuid,
 ) -> Result<LoginResponse, anyhow::Error> {
     let now = Timestamp::now();
     let issued_at = now.as_second() as usize;
@@ -72,6 +76,7 @@ pub fn generate_token_response(
         not_before: issued_at,
         expires_at,
         id: token_id,
+        family_id: token_family_id,
         device_id,
     };
 

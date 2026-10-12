@@ -458,8 +458,9 @@ storage_ty = { Timestamp = 6 }
 [[schema.tables.columns]]
 id = { table = 8, index = 2 }
 name = "id"
-ty = "Uuid"
-storage_ty = "Uuid"
+ty = "U64"
+storage_ty = { UnsignedInteger = 8 }
+auto_increment = true
 
 [[schema.tables.columns]]
 id = { table = 8, index = 3 }
@@ -475,18 +476,24 @@ storage_ty = "Uuid"
 
 [[schema.tables.columns]]
 id = { table = 8, index = 5 }
-name = "token_family_id"
+name = "access_token_id"
 ty = "Uuid"
 storage_ty = "Uuid"
 
 [[schema.tables.columns]]
 id = { table = 8, index = 6 }
+name = "token_family_id"
+ty = "Uuid"
+storage_ty = "Uuid"
+
+[[schema.tables.columns]]
+id = { table = 8, index = 7 }
 name = "is_revoked"
 ty = "Bool"
 storage_ty = "Boolean"
 
 [[schema.tables.columns]]
-id = { table = 8, index = 7 }
+id = { table = 8, index = 8 }
 name = "token_hash"
 ty = "Bytes"
 storage_ty = "Blob"
@@ -503,11 +510,11 @@ primary_key = true
 id = { table = 8, index = 1 }
 name = "index_refresh_tokens_by_token_hash"
 on = 8
-columns = [{ column = { table = 8, index = 7 }, op = "Eq", scope = "Partition" }]
+columns = [{ column = { table = 8, index = 8 }, op = "Eq", scope = "Partition" }]
 unique = true
 
 [[schema.tables.indices]]
 id = { table = 8, index = 2 }
 name = "index_refresh_tokens_by_token_family_id"
 on = 8
-columns = [{ column = { table = 8, index = 5 }, op = "Eq", scope = "Partition" }]
+columns = [{ column = { table = 8, index = 6 }, op = "Eq", scope = "Partition" }]

@@ -1,6 +1,6 @@
 use toasty::Db;
 
-use crate::{JwtTokenConf, SecretsConf, ServerConf};
+use crate::{CookiesConf, JwtTokenConf, SecretsConf, ServerConf};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -8,4 +8,5 @@ pub struct AppState {
     pub server_conf: ServerConf,
     pub secrets_conf: SecretsConf,
     pub jwt_token_conf: JwtTokenConf,
+    pub cookies_conf: CookiesConf,
 }

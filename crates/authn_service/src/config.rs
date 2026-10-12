@@ -16,6 +16,9 @@ pub struct AppConf {
 
     #[envconfig(nested)]
     pub jwt: JwtTokenConf,
+
+    #[envconfig(nested)]
+    pub cookies: CookiesConf,
 }
 
 impl AppConf {
@@ -93,6 +96,16 @@ pub struct JwtTokenConf {
     pub audience: StringVec,
     #[envconfig(from = "JWT_TOKEN_LIFETIME")]
     pub lifetime: Duration,
+}
+
+#[derive(Clone, Envconfig)]
+pub struct CookiesConf {
+    #[envconfig(from = "COOKIE_DOMAIN", default = "localhost")]
+    pub domain: String,
+    #[envconfig(from = "DEVICE_ID_COOKIE_LIFETIME_IN_DAYS", default = "7")]
+    pub device_id_lifetime_in_days: i64,
+    #[envconfig(from = "REFRESH_TOKEN_COOKIE_LIFETIME_IN_DAYS", default = "30")]
+    pub refresh_token_lifetime_in_days: i64,
 }
 
 // Custom type: SecretString
