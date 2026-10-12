@@ -63,7 +63,9 @@ pub async fn login(
 
     let password_hash = &user.password.get().as_ref().ok_or(Error::InvalidGrant)?.password_hash;
     let pepper = state.secrets_conf.password_pepper.expose_str().as_bytes();
-    password::verify(pepper, payload.password.as_bytes(), password_hash).await?;
+    if !password::verify(pepper, payload.password.as_bytes(), password_hash).await? {
+        return Err(Error::InvalidCredentials);
+    }
 
     let device_id_hash_salt = state.secrets_conf.device_id_hash_salt.expose_str();
 
