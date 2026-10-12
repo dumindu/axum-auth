@@ -6,7 +6,7 @@ pub fn refresh_token<'a, 'b>(family_id: &'a Uuid, token: &'a str) -> Cookie<'b> 
     Cookie::build(("refresh_token", format!("{}:{}", family_id, token)))
         .http_only(true)
         .secure(true)
-        .path("/")
+        .path("/") // todo: set refresh only
         .max_age(Duration::days(7))
         .same_site(Strict)
         .build()
