@@ -1,4 +1,4 @@
-use std::{convert::Infallible, str::FromStr};
+use std::{collections::HashSet, convert::Infallible, str::FromStr};
 
 use envconfig::Envconfig;
 use jiff::SignedDuration;
@@ -93,7 +93,7 @@ pub struct JwtTokenConf {
     #[envconfig(from = "JWT_TOKEN_ISSUER")]
     pub issuer: String,
     #[envconfig(from = "JWT_TOKEN_AUDIENCE")]
-    pub audience: StringVec,
+    pub audience: StringSet,
     #[envconfig(from = "JWT_TOKEN_LIFETIME")]
     pub lifetime: Duration,
 }
@@ -126,11 +126,10 @@ impl SecretString {
     }
 }
 
-// Custom type: StringArray
 #[derive(Clone)]
-pub struct StringVec(pub Vec<String>);
+pub struct StringSet(pub HashSet<String>);
 
-impl FromStr for StringVec {
+impl FromStr for StringSet {
     type Err = Infallible;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -139,7 +138,8 @@ impl FromStr for StringVec {
             .map(|item| item.trim().to_string())
             .filter(|item| !item.is_empty())
             .collect();
-        Ok(StringVec(items))
+
+        Ok(StringSet(items))
     }
 }
 

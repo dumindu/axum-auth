@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use ed25519_dalek::{Signature, Signer, SigningKey, pkcs8::DecodePrivateKey};
 use jiff::Timestamp;
@@ -7,10 +9,9 @@ use uuid::Uuid;
 
 use crate::{JwtTokenConf, app::jwt_token};
 
-const HEADER_ALG: &str = "EdDSA";
-const HEADER_TYP: &str = "JWT";
-
-const RESPONSE_TOKEN_TYPE: &str = "Bearer";
+pub const HEADER_ALG: &str = "EdDSA";
+pub const HEADER_TYP: &str = "JWT";
+pub const TOKEN_TYPE: &str = "Bearer";
 
 #[derive(Serialize)]
 pub struct Header {
@@ -27,7 +28,7 @@ pub struct Claims<'a> {
     pub subject: &'a Uuid,
 
     #[serde(rename = "aud")]
-    pub audience: Vec<String>,
+    pub audience: HashSet<String>,
 
     #[serde(rename = "exp")]
     pub expires_at: usize,
@@ -105,6 +106,6 @@ pub struct LoginResponse {
 
 impl LoginResponse {
     fn new(access_token: String, expires_in: i64) -> Self {
-        Self { access_token, token_type: RESPONSE_TOKEN_TYPE, expires_in }
+        Self { access_token, token_type: TOKEN_TYPE, expires_in }
     }
 }

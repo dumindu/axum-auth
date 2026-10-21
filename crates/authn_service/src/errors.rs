@@ -40,6 +40,19 @@ pub enum Error {
     InvalidGrant,
     #[schema(rename = "INVALID_CREDENTIALS")]
     InvalidCredentials,
+    #[schema(rename = "INVALID_REFRESH_TOKEN")]
+    InvalidRefreshToken,
+    // 401: jwt auth
+    #[schema(rename = "INVALID_TOKEN")]
+    InvalidToken,
+    #[schema(rename = "INVALID_TOKEN_ISSUER")]
+    InvalidTokenIssuer,
+    #[schema(rename = "INVALID_TOKEN_AUDIENCE")]
+    InvalidTokenAudience,
+    #[schema(rename = "NOT_YET_VALID_TOKEN")]
+    NotYetValidToken,
+    #[schema(rename = "EXPIRED_TOKEN")]
+    ExpiredToken,
     // 403
     #[serde(skip)]
     Forbidden,
@@ -92,6 +105,21 @@ impl IntoResponse for Error {
             Error::InvalidCredentials => {
                 (StatusCode::UNAUTHORIZED, b"{\"error\": \"INVALID_CREDENTIALS\"}")
             }
+            Error::InvalidRefreshToken => {
+                (StatusCode::UNAUTHORIZED, b"{\"error\": \"INVALID_REFRESH_TOKEN\"}")
+            }
+            // 401: jwt auth
+            Error::InvalidToken => (StatusCode::UNAUTHORIZED, b"{\"error\": \"INVALID_TOKEN\"}"),
+            Error::InvalidTokenIssuer => {
+                (StatusCode::UNAUTHORIZED, b"{\"error\": \"INVALID_TOKEN_ISSUER\"}")
+            }
+            Error::InvalidTokenAudience => {
+                (StatusCode::UNAUTHORIZED, b"{\"error\": \"INVALID_TOKEN_AUDIENCE\"}")
+            }
+            Error::NotYetValidToken => {
+                (StatusCode::UNAUTHORIZED, b"{\"error\": \"NOT_YET_VALID_TOKEN\"}")
+            }
+            Error::ExpiredToken => (StatusCode::UNAUTHORIZED, b"{\"error\": \"EXPIRED_TOKEN\"}"),
             // 403
             Error::Forbidden => (StatusCode::FORBIDDEN, b""),
             // 404

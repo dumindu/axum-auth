@@ -61,6 +61,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /v1/logout:
+    post:
+      tags:
+      - auth
+      operationId: logout
+      responses:
+        '200':
+          description: A successful logout
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+              description: refresh_token; Secure;HTTP-only;session cookie;Max-Age=-2days
+        '401':
+          description: unauthorized request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: An internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+      - jwt_token: []
   /v1/register:
     post:
       tags:
@@ -118,6 +145,12 @@ components:
       - TIME_GEN_FAILED
       - INVALID_GRANT
       - INVALID_CREDENTIALS
+      - INVALID_REFRESH_TOKEN
+      - INVALID_TOKEN
+      - INVALID_TOKEN_ISSUER
+      - INVALID_TOKEN_AUDIENCE
+      - NOT_YET_VALID_TOKEN
+      - EXPIRED_TOKEN
       - DUPLICATE_ENTITY
     ErrorResponse:
       type: object

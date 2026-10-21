@@ -7,8 +7,9 @@ use uuid::Uuid;
 use super::payload::LoginRequest;
 use crate::{
     app::{
-        LoginResponse, ValidatedJson, ValidationErrorResponse, cookies, jwt_token, password,
-        sha_hashes,
+        ValidatedJson, ValidationErrorResponse, cookies,
+        jwt_token::{self, LoginResponse},
+        password, sha_hashes,
     },
     errors::{Error, Error::TimeGen, ErrorResponse},
     models::{RefreshToken, User, UserDevice, UserStatus},

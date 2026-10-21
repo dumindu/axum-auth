@@ -15,7 +15,7 @@ use tower_http::{
 };
 use tracing::{Span, info, info_span};
 
-use crate::{app, state::AppState};
+use crate::{app, authn_middleware, state::AppState};
 
 const REQUEST_ID_HEADER: &str = "x-request-id";
 
@@ -54,12 +54,17 @@ pub fn init(state: AppState) -> Router {
         .layer(PropagateRequestIdLayer::new(x_request_id))
         .layer(cors_layer(&state));
 
+    let protected_router = Router::new()
+        .nest("/v1/logout", app::logout::router())
+        .route_layer(axum::middleware::from_fn_with_state(state.clone(), authn_middleware));
+
     Router::new()
         .route("/livez", get(livez))
         .nest("/v1/register", app::register::router())
         .nest("/v1/login", app::login::router())
+        .merge(protected_router)
         .layer(DefaultBodyLimit::max(state.server_conf.default_body_limit))
-        .layer(middleware)
+        .layer(middleware) // Request Id, tracing/ request logs
         .with_state(state)
 }
 
