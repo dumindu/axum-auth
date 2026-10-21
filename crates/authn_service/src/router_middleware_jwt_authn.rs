@@ -1,11 +1,5 @@
 use std::{collections::HashSet, fmt::Debug};
 
-use axum::{
-    extract::{Request, State},
-    http::header,
-    middleware::Next,
-    response::Response,
-};
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use ed25519_dalek::{Signature, SigningKey, pkcs8::DecodePrivateKey};
 use jiff::Timestamp;
@@ -15,11 +9,9 @@ use uuid::Uuid;
 use crate::{
     AppState, JwtTokenConf,
     app::jwt_token::{HEADER_ALG, HEADER_TYP, TOKEN_TYPE},
-    errors::{
-        Error,
-        Error::{
-            ExpiredToken, InvalidToken, InvalidTokenAudience, InvalidTokenIssuer, NotYetValidToken,
-        },
+    errors::Error::{
+        self, ExpiredToken, InvalidToken, InvalidTokenAudience, InvalidTokenIssuer,
+        NotYetValidToken,
     },
     extension::CurrentUser,
 };
@@ -140,6 +132,13 @@ pub enum ErrorKind {
     #[error("NOT_YT_VALID_TOKEN")]
     NotYetValid,
 }
+
+use axum::{
+    extract::{Request, State},
+    http::header,
+    middleware::Next,
+    response::Response,
+};
 
 pub async fn authn_middleware(
     State(state): State<AppState>,
