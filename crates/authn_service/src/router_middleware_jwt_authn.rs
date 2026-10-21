@@ -1,8 +1,4 @@
-use std::{
-    collections::HashSet,
-    error::Error as StdError,
-    fmt::{Debug, Display, Formatter, Result as FmtResult},
-};
+use std::{collections::HashSet, fmt::Debug};
 
 use axum::{
     extract::{Request, State},
@@ -131,26 +127,18 @@ pub fn validate_token_and_generate_extension_current_user(
     Ok(claims.to_current_user())
 }
 
+#[derive(thiserror::Error, Debug)]
 pub enum ErrorKind {
+    #[error("INVALID_TOKEN")]
     Invalid,
+    #[error("INVALID_TOKEN_ISSUER")]
     InvalidIssuer,
+    #[error("INVALID_TOKEN_AUDIENCE")]
     InvalidAudience,
+    #[error("EXPIRED_TOKEN")]
     Expired,
+    #[error("NOT_YT_VALID_TOKEN")]
     NotYetValid,
-}
-
-impl StdError for ErrorKind {}
-
-impl Display for ErrorKind {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        write!(f, "An Error Occurred, Please Try Again!")
-    }
-}
-
-impl Debug for ErrorKind {
-    fn fmt(&self, f: &mut Formatter) -> FmtResult {
-        write!(f, "{{ file: {}, line: {} }}", file!(), line!())
-    }
 }
 
 pub async fn authn_middleware(
