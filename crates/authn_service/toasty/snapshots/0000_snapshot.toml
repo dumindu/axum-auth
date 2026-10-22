@@ -515,6 +515,12 @@ unique = true
 
 [[schema.tables.indices]]
 id = { table = 8, index = 2 }
+name = "index_refresh_tokens_by_access_token_id"
+on = 8
+columns = [{ column = { table = 8, index = 5 }, op = "Eq", scope = "Partition" }]
+
+[[schema.tables.indices]]
+id = { table = 8, index = 3 }
 name = "index_refresh_tokens_by_token_family_id"
 on = 8
 columns = [{ column = { table = 8, index = 6 }, op = "Eq", scope = "Partition" }]

@@ -52,7 +52,7 @@ pub async fn login(
             if err.is_record_not_found() {
                 Error::InvalidCredentials
             } else {
-                error!(target: "database", "failed to fetch: {err:?}");
+                error!(target: "db", "failed to fetch: {err:?}");
                 Error::DbFetch
             }
         })?;
@@ -80,14 +80,14 @@ pub async fn login(
             .exec(&mut state.db)
             .await
             .map_err(|err| {
-                error!(target: "database", "failed to fetch: {err:?}");
+                error!(target: "db", "failed to fetch: {err:?}");
                 Error::DbFetch
             })?,
         None => None,
     };
 
     let mut tx = state.db.transaction().await.map_err(|err| {
-        error!(target: "database", "failed to begin transaction: {err:?}");
+        error!(target: "db", "failed to begin tx: {err:?}");
         Error::DbTransactionBegin
     })?;
 
@@ -95,7 +95,7 @@ pub async fn login(
     let user_device = match user_device {
         Some(mut existing_device) => {
             existing_device.update().exec(&mut tx).await.map_err(|err| {
-                error!(target: "database", "failed to update: {err:?}");
+                error!(target: "db", "failed to update: {err:?}");
                 Error::DbUpdate
             })?;
             // todo: invalidate active access/ refresh tokens of same device
@@ -113,7 +113,7 @@ pub async fn login(
             .exec(&mut tx)
             .await
             .map_err(|err| {
-                error!(target: "database", "failed to insert: {err:?}");
+                error!(target: "db", "failed to insert: {err:?}");
                 Error::DbInsert
             })?;
 
@@ -137,7 +137,7 @@ pub async fn login(
     .exec(&mut tx)
     .await
     .map_err(|err| {
-        error!(target: "database", "failed to insert: {err:?}");
+        error!(target: "db", "failed to insert: {err:?}");
         Error::DbInsert
     })?;
     let token_id = &refresh_token.access_token_id;
@@ -146,7 +146,7 @@ pub async fn login(
     jar = jar.add(cookies::refresh_token(cookies_config, token_family_id, &raw_refresh_token));
 
     tx.commit().await.map_err(|err| {
-        error!(target: "database", "failed to commit transaction: {err:?}");
+        error!(target: "db", "failed to commit tx: {err:?}");
         Error::DbTransactionCommit
     })?;
 

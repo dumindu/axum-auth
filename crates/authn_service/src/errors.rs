@@ -15,6 +15,10 @@ pub struct ErrorResponse {
 #[derive(ToSchema)]
 pub enum Error {
     // 500
+    #[schema(rename = "DB_TX_BEGIN_FAILED")]
+    DbTransactionBegin,
+    #[schema(rename = "DB_TX_COMMIT_FAILED")]
+    DbTransactionCommit,
     #[schema(rename = "DB_INSERT_FAILED")]
     DbInsert,
     #[schema(rename = "DB_FETCH_FAILED")]
@@ -23,10 +27,10 @@ pub enum Error {
     DbUpdate,
     #[schema(rename = "DB_DELETE_FAILED")]
     DbDelete,
-    #[schema(rename = "DB_TRANSACTION_BEGIN_FAILED")]
-    DbTransactionBegin,
-    #[schema(rename = "DB_TRANSACTION_COMMIT_FAILED")]
-    DbTransactionCommit,
+    #[schema(rename = "CACHE_SET_FAILED")]
+    CacheSet,
+    #[schema(rename = "CACHE_EXISTS_FAILED")]
+    CacheExists,
     #[schema(rename = "PASSWORD_HASH_CONTEXT_FAILED")]
     PasswordHashContext,
     #[schema(rename = "PASSWORD_HASH_ACTION_FAILED")]
@@ -53,6 +57,8 @@ pub enum Error {
     NotYetValidToken,
     #[schema(rename = "EXPIRED_TOKEN")]
     ExpiredToken,
+    #[schema(rename = "BLACKLISTED_TOKEN")]
+    BlacklistedToken,
     // 403
     #[serde(skip)]
     Forbidden,
@@ -68,6 +74,12 @@ impl IntoResponse for Error {
     fn into_response(self) -> Response {
         let (status, bytes): (StatusCode, &'static [u8]) = match self {
             // 500
+            Error::DbTransactionBegin => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"DB_TX_BEGIN_FAILED\"}")
+            }
+            Error::DbTransactionCommit => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"DB_TX_COMMIT_FAILED\"}")
+            }
             Error::DbInsert => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"DB_INSERT_FAILED\"}")
             }
@@ -80,13 +92,12 @@ impl IntoResponse for Error {
             Error::DbDelete => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"DB_DELETE_FAILED\"}")
             }
-            Error::DbTransactionBegin => {
-                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"DB_TRANSACTION_BEGIN_FAILED\"}")
+            Error::CacheSet => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"CACHE_SET_FAILED\"}")
             }
-            Error::DbTransactionCommit => (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                b"{\"error\": \"DB_TRANSACTION_COMMIT_FAILED\"}",
-            ),
+            Error::CacheExists => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"CACHE_EXISTS_FAILED\"}")
+            }
             Error::PasswordHashContext => (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 b"{\"error\": \"PASSWORD_HASH_CONTEXT_FAILED\"}",
@@ -120,6 +131,9 @@ impl IntoResponse for Error {
                 (StatusCode::UNAUTHORIZED, b"{\"error\": \"NOT_YET_VALID_TOKEN\"}")
             }
             Error::ExpiredToken => (StatusCode::UNAUTHORIZED, b"{\"error\": \"EXPIRED_TOKEN\"}"),
+            Error::BlacklistedToken => {
+                (StatusCode::UNAUTHORIZED, b"{\"error\": \"BLACKLISTED_TOKEN\"}")
+            }
             // 403
             Error::Forbidden => (StatusCode::FORBIDDEN, b""),
             // 404

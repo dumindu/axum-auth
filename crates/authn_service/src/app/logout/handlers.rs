@@ -1,9 +1,19 @@
-use axum::{extract::State, response::IntoResponse};
+use axum::{
+    extract::{Extension, State},
+    response::IntoResponse,
+};
 use axum_extra::extract::cookie::CookieJar;
+use redis::AsyncTypedCommands;
+use tracing::error;
 
 use crate::{
-    app::cookies,
+    app::{
+        caches::{VALUE_TRUE, token_blacklist_key},
+        cookies,
+    },
     errors::{Error, ErrorResponse},
+    extension::{Token, User},
+    models::{RefreshToken, UserDevice},
     state::AppState,
 };
 
@@ -26,10 +36,31 @@ use crate::{
     )
 )]
 pub async fn logout(
-    State(state): State<AppState>,
+    State(mut state): State<AppState>,
+    Extension(user): Extension<User>,
+    Extension(token): Extension<Token>,
     mut jar: CookieJar,
 ) -> Result<impl IntoResponse, Error> {
-    // TODO
+    RefreshToken::update_by_access_token_id(token.id)
+        .is_revoked(true)
+        .exec(&mut state.db)
+        .await
+        .map_err(|err| {
+            error!(target: "db", "failed to update: {err:?}");
+            Error::DbUpdate
+        })?;
+
+    UserDevice::update_by_id(user.device_id).exec(&mut state.db).await.map_err(|err| {
+        error!(target: "db", "failed to update: {err:?}");
+        Error::DbUpdate
+    })?;
+
+    let key = token_blacklist_key(&token.id);
+    state.cache.set_ex(&key, VALUE_TRUE, token.expires_in).await.map_err(|err| {
+        error!(target: "cache", "failed to set: {key}: {err:?}");
+        Error::CacheSet
+    })?;
+
     jar = jar.add(cookies::refresh_token_expired(&state.cookies_conf));
     Ok(jar)
 }

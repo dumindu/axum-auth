@@ -5,6 +5,7 @@ mod sha_hashes;
 mod validation;
 mod verification;
 
+pub mod caches;
 pub mod jwt_token;
 pub mod login;
 pub mod logout;

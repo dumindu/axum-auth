@@ -1,7 +1,7 @@
 export CARGO_TARGET_DIR := "../../target"
 set dotenv-load
 
-db_host := "localhost"
+localhost := "localhost"
 
 # List available commands
 help:
@@ -30,12 +30,12 @@ test:
 
 # Run server app
 app:
-    DB_HOST={{ db_host }} \
+    DB_HOST={{ localhost }} CACHE_HOST={{ localhost }} \
     cargo run --bin app
 
 # Run DB migration CLI
 migration *cmd:
-    DB_HOST={{ db_host }} \
+    DB_HOST={{ localhost }} \
     cargo run --bin migration -- migration {{cmd}}
 
 # Generate openapi.yaml

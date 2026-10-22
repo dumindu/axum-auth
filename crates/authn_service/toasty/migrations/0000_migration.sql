@@ -106,4 +106,5 @@ CREATE TABLE "refresh_tokens"
     PRIMARY KEY ("id")
 );
 CREATE UNIQUE INDEX "index_refresh_tokens_by_token_hash" ON "refresh_tokens" ("token_hash");
+CREATE INDEX "index_refresh_tokens_by_access_token_id" ON "refresh_tokens" ("access_token_id");
 CREATE INDEX "index_refresh_tokens_by_token_family_id" ON "refresh_tokens" ("token_family_id");

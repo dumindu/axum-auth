@@ -12,6 +12,9 @@ pub struct AppConf {
     pub db: DbConf,
 
     #[envconfig(nested)]
+    pub cache: CacheConf,
+
+    #[envconfig(nested)]
     pub secrets: SecretsConf,
 
     #[envconfig(nested)]
@@ -73,6 +76,20 @@ impl DbConf {
             "{}://{}:{}@{}:{}/{}",
             self.protocol, self.user, self.password, self.host, self.port, self.db_name
         )
+    }
+}
+
+#[derive(Clone, Envconfig)]
+pub struct CacheConf {
+    #[envconfig(from = "CACHE_HOST")]
+    pub host: String,
+    #[envconfig(from = "CACHE_PORT", default = "6379")]
+    pub port: u16,
+}
+
+impl CacheConf {
+    pub fn to_database_url(&self) -> String {
+        format!("redis://{}:{}/", self.host, self.port)
     }
 }
 

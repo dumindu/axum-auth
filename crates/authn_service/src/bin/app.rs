@@ -35,9 +35,13 @@ async fn main() -> anyhow::Result<()> {
         .connect(&conf.db.to_database_url())
         .await?;
 
+    let cache_client = redis::Client::open(conf.cache.to_database_url())?;
+    let cache = cache_client.get_multiplexed_async_connection().await?;
+
     let addr = conf.server.to_addr();
     let state = AppState {
         db,
+        cache,
         server_conf: conf.server,
         secrets_conf: conf.secrets,
         jwt_token_conf: conf.jwt,

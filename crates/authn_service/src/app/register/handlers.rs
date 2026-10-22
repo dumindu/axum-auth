@@ -35,7 +35,7 @@ pub async fn register(
         .exec(&mut state.db)
         .await
         .map_err(|err| {
-            error!(target: "database", "failed to fetch: {err:?}");
+            error!(target: "db", "failed to fetch: {err:?}");
             Error::DbFetch
         })?;
 
@@ -51,7 +51,7 @@ pub async fn register(
         .exec(&mut state.db)
         .await
         .map_err(|err| {
-            error!(target: "database", "failed to fetch: {err:?}");
+            error!(target: "db", "failed to fetch: {err:?}");
             Error::DbFetch
         })?;
 
@@ -81,7 +81,7 @@ pub async fn register(
     .exec(&mut state.db)
     .await
     .map_err(|err| {
-        error!(target: "database", "failed to insert: {err:?}");
+        error!(target: "db", "failed to insert: {err:?}");
         Error::DbInsert
     })?;
 

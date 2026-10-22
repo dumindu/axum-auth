@@ -13,7 +13,7 @@ use crate::{
         self, ExpiredToken, InvalidToken, InvalidTokenAudience, InvalidTokenIssuer,
         NotYetValidToken,
     },
-    extension::CurrentUser,
+    extension::{Token, User},
 };
 
 #[derive(Debug, Deserialize)]
@@ -34,13 +34,13 @@ pub struct DecodedClaims {
     pub audience: HashSet<String>,
 
     #[serde(rename = "exp")]
-    pub expires_at: usize,
+    pub expires_at: u64,
 
     #[serde(rename = "nbf")]
-    pub not_before: usize,
+    pub not_before: u64,
 
     #[serde(rename = "iat")]
-    pub _issued_at: usize,
+    pub _issued_at: u64,
 
     #[serde(rename = "jti")]
     pub id: Uuid,
@@ -53,13 +53,12 @@ pub struct DecodedClaims {
 }
 
 impl DecodedClaims {
-    pub fn to_current_user(&self) -> CurrentUser {
-        CurrentUser {
-            user_id: self.subject,
-            device_id: self.device_id,
-            token_id: self.id,
-            token_family_id: self.family_id,
-        }
+    pub fn to_user(&self) -> User {
+        User { id: self.subject, device_id: self.device_id }
+    }
+
+    pub fn to_token(&self, now: u64) -> Token {
+        Token { id: self.id, family_id: self.family_id, expires_in: self.expires_at - now }
     }
 }
 
@@ -68,10 +67,7 @@ fn base64_url_json_decode<T: DeserializeOwned>(encoded: &str) -> Result<T, anyho
     Ok(serde_json::from_slice(&json)?)
 }
 
-pub fn validate_token_and_generate_extension_current_user(
-    conf: &JwtTokenConf,
-    token: &str,
-) -> Result<CurrentUser, anyhow::Error> {
+pub fn validate_token(conf: &JwtTokenConf, token: &str) -> Result<(User, Token), anyhow::Error> {
     let parts: Vec<&str> = token.split('.').collect();
     if parts.len() != 3 {
         Err(ErrorKind::Invalid)?;
@@ -98,7 +94,7 @@ pub fn validate_token_and_generate_extension_current_user(
     signing_key.verify(signing_input.as_bytes(), &signature)?;
 
     let claims: DecodedClaims = base64_url_json_decode(encoded_claims)?;
-    let now = Timestamp::now().as_second() as usize;
+    let now = Timestamp::now().as_second() as u64;
 
     if claims.issuer != conf.issuer {
         Err(ErrorKind::InvalidIssuer)?;
@@ -116,7 +112,7 @@ pub fn validate_token_and_generate_extension_current_user(
         Err(ErrorKind::Expired)?;
     }
 
-    Ok(claims.to_current_user())
+    Ok((claims.to_user(), claims.to_token(now)))
 }
 
 #[derive(thiserror::Error, Debug)]
@@ -139,9 +135,13 @@ use axum::{
     middleware::Next,
     response::Response,
 };
+use redis::AsyncTypedCommands;
+use tracing::error;
+
+use crate::{app::caches::token_blacklist_key, errors::Error::BlacklistedToken};
 
 pub async fn authn_middleware(
-    State(state): State<AppState>,
+    State(mut state): State<AppState>,
     mut request: Request,
     next: Next,
 ) -> Result<Response, Error> {
@@ -156,22 +156,35 @@ pub async fn authn_middleware(
     }
     let token = &auth_header[7..];
 
-    let current_user =
-        validate_token_and_generate_extension_current_user(&state.jwt_token_conf, token).map_err(
-            |err| {
-                if let Some(token_err) = err.downcast_ref::<ErrorKind>() {
-                    match token_err {
-                        ErrorKind::InvalidIssuer => InvalidTokenIssuer,
-                        ErrorKind::InvalidAudience => InvalidTokenAudience,
-                        ErrorKind::Expired => ExpiredToken,
-                        ErrorKind::NotYetValid => NotYetValidToken,
-                        _ => InvalidToken,
-                    }
-                } else {
-                    InvalidToken
-                }
-            },
-        )?;
-    request.extensions_mut().insert(current_user);
+    let path = request.uri().path();
+    let need_token_info = matches!(path, "/v1/logout" | "/v1/refresh");
+
+    let (user, token) = validate_token(&state.jwt_token_conf, token).map_err(|err| {
+        if let Some(token_err) = err.downcast_ref::<ErrorKind>() {
+            match token_err {
+                ErrorKind::InvalidIssuer => InvalidTokenIssuer,
+                ErrorKind::InvalidAudience => InvalidTokenAudience,
+                ErrorKind::Expired => ExpiredToken,
+                ErrorKind::NotYetValid => NotYetValidToken,
+                _ => InvalidToken,
+            }
+        } else {
+            InvalidToken
+        }
+    })?;
+
+    let key = token_blacklist_key(&token.id);
+    if state.cache.exists(&key).await.map_err(|err| {
+        error!(target: "cache", "failed to exists: {key}: {err:?}");
+        Error::CacheExists
+    })? {
+        return Err(BlacklistedToken);
+    }
+
+    request.extensions_mut().insert(user);
+    if need_token_info {
+        request.extensions_mut().insert(token);
+    }
+
     Ok(next.run(request).await)
 }

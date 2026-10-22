@@ -30,3 +30,12 @@ services:
       timeout: 5s
       retries: 5
     restart: always
+
+  cache:
+    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+    volumes:
+      - ./docker/dragonfly:/data
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379"

@@ -31,13 +31,13 @@ pub struct Claims<'a> {
     pub audience: HashSet<String>,
 
     #[serde(rename = "exp")]
-    pub expires_at: usize,
+    pub expires_at: u64,
 
     #[serde(rename = "nbf")]
-    pub not_before: usize,
+    pub not_before: u64,
 
     #[serde(rename = "iat")]
-    pub issued_at: usize,
+    pub issued_at: u64,
 
     #[serde(rename = "jti")]
     pub id: &'a Uuid,
@@ -62,12 +62,12 @@ pub fn generate_token_response(
     token_family_id: &Uuid,
 ) -> Result<LoginResponse, anyhow::Error> {
     let now = Timestamp::now();
-    let issued_at = now.as_second() as usize;
+    let issued_at = now.as_second() as u64;
 
     let access_token_duration = conf.lifetime.0;
     let expires_in = access_token_duration.as_secs();
 
-    let expires_at = now.checked_add(access_token_duration)?.as_second() as usize;
+    let expires_at = now.checked_add(access_token_duration)?.as_second() as u64;
 
     let claims = jwt_token::Claims {
         issuer: conf.issuer.clone(),
