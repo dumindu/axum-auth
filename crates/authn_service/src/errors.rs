@@ -39,6 +39,12 @@ pub enum Error {
     JwtGen,
     #[schema(rename = "TIME_GEN_FAILED")]
     TimeGen,
+    #[schema(rename = "MSG_GEN_FAILED")]
+    MsgGen,
+    #[schema(rename = "MSG_PUB_FAILED")]
+    MsgPub,
+    #[schema(rename = "MSG_ACK_FAILED")]
+    MsgAck,
     // 401
     #[schema(rename = "INVALID_GRANT")]
     InvalidGrant,
@@ -110,6 +116,15 @@ impl IntoResponse for Error {
             }
             Error::TimeGen => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"TIME_GEN_FAILED\"}")
+            }
+            Error::MsgGen => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"MSG_GEN_FAILED\"}")
+            }
+            Error::MsgPub => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"MSG_PUB_FAILED\"}")
+            }
+            Error::MsgAck => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"MSG_ACK_FAILED\"}")
             }
             // 401
             Error::InvalidGrant => (StatusCode::UNAUTHORIZED, b"{\"error\": \"INVALID_GRANT\"}"),

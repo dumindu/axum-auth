@@ -1,5 +1,7 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse};
-use tracing::{error, info};
+use bytes::Bytes;
+use nats_messages::notify_emails_authn::Verification as VerificationMsg;
+use tracing::error;
 
 use super::payload::RegistrationRequest;
 use crate::{
@@ -63,11 +65,26 @@ pub async fn register(
     }
 
     let verification = Verification::new().map_err(|err| {
-        error!(target: "verification", "failed to generate: {err:?}");
+        error!(target: "vfy", "failed to generate: {err:?}");
         Error::TimeGen
     })?;
 
-    info!(target: "verification", "code: {}", verification.code); // todo: send verification email
+    let nats_msg = VerificationMsg {
+        email: email.to_owned(),
+        code: verification.code,
+        expires_at: verification.expires_at.as_second(),
+    };
+    let nats_msg = rkyv::to_bytes::<rkyv::rancor::Error>(&nats_msg).map_err(|err| {
+        error!(target: "rkyv", "failed to serialize: {err:?}");
+        Error::MsgGen
+    })?;
+
+    state.js.publish(VerificationMsg::SUBJECT, Bytes::copy_from_slice(&nats_msg)).await.map_err(
+        |err| {
+            error!(target: "nats", "failed to publish: {err:?}");
+            Error::MsgPub
+        },
+    )?;
 
     let pepper = state.secrets_conf.password_pepper.expose_str().as_bytes();
     let password_hash = password::hash(pepper, payload.password.as_bytes()).await?;

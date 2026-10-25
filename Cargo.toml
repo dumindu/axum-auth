@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["crates/authn_service"]
+members = ["crates/authn_service", "crates/nats_messages"]
 
 [workspace.lints.clippy]
 doc_markdown = "warn"

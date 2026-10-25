@@ -15,6 +15,9 @@ pub struct AppConf {
     pub cache: CacheConf,
 
     #[envconfig(nested)]
+    pub nats: NatsConf,
+
+    #[envconfig(nested)]
     pub secrets: SecretsConf,
 
     #[envconfig(nested)]
@@ -90,6 +93,22 @@ pub struct CacheConf {
 impl CacheConf {
     pub fn to_database_url(&self) -> String {
         format!("redis://{}:{}/", self.host, self.port)
+    }
+}
+
+#[derive(Clone, Envconfig)]
+pub struct NatsConf {
+    #[envconfig(from = "NATS_HOST")]
+    pub host: String,
+    #[envconfig(from = "NATS_PORT", default = "4222")]
+    pub port: u16,
+    #[envconfig(from = "NATS_USER_PRIVATE_KEY")]
+    pub user_private_key: SecretString,
+}
+
+impl NatsConf {
+    pub fn to_addr(&self) -> String {
+        format!("nats://{}:{}/", self.host, self.port)
     }
 }
 

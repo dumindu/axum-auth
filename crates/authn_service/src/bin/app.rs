@@ -1,3 +1,4 @@
+use async_nats::{ConnectOptions, jetstream};
 use authn_service::{AppConf, AppState, models::*, routes};
 use mimalloc::MiMalloc;
 use tracing::info;
@@ -38,10 +39,16 @@ async fn main() -> anyhow::Result<()> {
     let cache_client = redis::Client::open(conf.cache.to_database_url())?;
     let cache = cache_client.get_multiplexed_async_connection().await?;
 
+    let nats_options =
+        ConnectOptions::with_nkey(conf.nats.user_private_key.expose_str().to_owned());
+    let nats = async_nats::connect_with_options(conf.nats.to_addr(), nats_options).await?;
+    let js = jetstream::new(nats);
+
     let addr = conf.server.to_addr();
     let state = AppState {
         db,
         cache,
+        js,
         server_conf: conf.server,
         secrets_conf: conf.secrets,
         jwt_token_conf: conf.jwt,

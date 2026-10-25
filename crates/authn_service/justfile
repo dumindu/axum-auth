@@ -30,17 +30,26 @@ test:
 
 # Run server app
 app:
-    DB_HOST={{ localhost }} CACHE_HOST={{ localhost }} \
+    DB_HOST={{ localhost }} CACHE_HOST={{ localhost }} NATS_HOST={{ localhost }} \
     cargo run --bin app
 
 # Run DB migration CLI
 migration *cmd:
     DB_HOST={{ localhost }} \
-    cargo run --bin migration -- migration {{cmd}}
+    cargo run --bin migration -- migration {{ cmd }}
 
 # Generate openapi.yaml
 apidoc:
     cargo run --bin apidoc
+
+# Set NATS context
+nats-context:
+    nats context save sys --server localhost:4222 --user root --password 2efbe41f2bbe7507e6b54d7d90937c5c
+    echo "⚠️ Add 'export NATS_CONTEXT=\"sys\"' to your ~/.zshrc or ~/.bashrc"
+
+# Setup NATS
+nats-setup:
+    nats stream edit notify --subjects "notify.email.authn.verification,notify.email.authn.new_device,notify.email.authn.change_password"
 
 ## =========================================================================
 
