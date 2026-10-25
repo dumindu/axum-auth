@@ -133,16 +133,21 @@ components:
     Error:
       type: string
       enum:
+      - DB_TX_BEGIN_FAILED
+      - DB_TX_COMMIT_FAILED
       - DB_INSERT_FAILED
       - DB_FETCH_FAILED
       - DB_UPDATE_FAILED
       - DB_DELETE_FAILED
-      - DB_TRANSACTION_BEGIN_FAILED
-      - DB_TRANSACTION_COMMIT_FAILED
+      - CACHE_SET_FAILED
+      - CACHE_EXISTS_FAILED
       - PASSWORD_HASH_CONTEXT_FAILED
       - PASSWORD_HASH_ACTION_FAILED
       - JWT_GEN_FAILED
       - TIME_GEN_FAILED
+      - MSG_GEN_FAILED
+      - MSG_PUB_FAILED
+      - MSG_ACK_FAILED
       - INVALID_GRANT
       - INVALID_CREDENTIALS
       - INVALID_REFRESH_TOKEN
@@ -151,6 +156,7 @@ components:
       - INVALID_TOKEN_AUDIENCE
       - NOT_YET_VALID_TOKEN
       - EXPIRED_TOKEN
+      - BLACKLISTED_TOKEN
       - DUPLICATE_ENTITY
     ErrorResponse:
       type: object

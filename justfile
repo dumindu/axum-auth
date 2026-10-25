@@ -3,6 +3,8 @@ help:
     @just --list --unsorted --list-prefix '  ' --list-heading $'🚀AXUM\n'
     @echo ''
     @just --list --unsorted --list-prefix '    ' --list-heading $'  🔐AUTHN SERVICE\n' --justfile crates/authn_service/justfile
+    @echo ''
+    @just --list --unsorted --list-prefix '    ' --list-heading $'  📧AUTHN WORKER-NOTIFY\n' --justfile crates/authn_worker_notify/justfile
 
 # Run lints on the workspace members (cargo fmt and clippy)
 lint:
@@ -27,3 +29,6 @@ test:
 
 # Forward to the AUTHN-SERVICE
 mod authn "crates/authn_service"
+
+# Forward to the AUTHN-NOTIFY
+mod authn-notify "crates/authn_worker_notify"
