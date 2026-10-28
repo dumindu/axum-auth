@@ -1,0 +1,25 @@
+services:
+  app:
+    image: authn-service-app
+    env_file: .env
+    build:
+      context: .
+      dockerfile: Dockerfile
+      additional_contexts:
+        workspace_root: ../..
+    networks:
+      - authn_service_default
+
+  mail:
+    image: marlonb/mailcrab:latest
+    environment:
+      ENABLE_TLS_AUTH: true
+    ports:
+      - "1080:1080"
+      - "1025:1025"
+    networks:
+      - authn_service_default
+
+networks:
+  authn_service_default:
+    external: true

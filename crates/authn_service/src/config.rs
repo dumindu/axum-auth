@@ -64,7 +64,7 @@ pub struct DbConf {
     #[envconfig(from = "DB_USER")]
     pub user: String,
     #[envconfig(from = "DB_PASS")]
-    pub password: String,
+    pub password: SecretString,
     #[envconfig(from = "DB_NAME")]
     pub db_name: String,
 }
@@ -77,7 +77,12 @@ impl DbConf {
     pub fn to_database_url(&self) -> String {
         format!(
             "{}://{}:{}@{}:{}/{}",
-            self.protocol, self.user, self.password, self.host, self.port, self.db_name
+            self.protocol,
+            self.user,
+            self.password.expose_str(),
+            self.host,
+            self.port,
+            self.db_name
         )
     }
 }

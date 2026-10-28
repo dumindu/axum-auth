@@ -1,1 +1,1 @@
-pub mod notify_emails_authn;
+pub mod authn;

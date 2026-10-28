@@ -11,10 +11,10 @@ pub struct Verification {
 
 impl Verification {
     pub const ACK_TIMEOUT: Duration = Duration::from_secs(3);
-    pub const CONSUMER: &'static str = "email_authn_verification_worker";
+    pub const CONSUMER: &'static str = "authn_email_verification";
     pub const MAX_RETRIES: i64 = 5;
-    pub const STREAM: &'static str = "notify";
-    pub const SUBJECT: &'static str = "notify.email.authn.verification";
+    pub const STREAM: &'static str = "authn";
+    pub const SUBJECT: &'static str = "authn.email.verification";
 }
 
 #[derive(Archive, Deserialize, Serialize)]
@@ -28,8 +28,8 @@ pub struct NewDevice {
 
 impl NewDevice {
     pub const ACK_TIMEOUT: Duration = Duration::from_secs(3);
-    pub const CONSUMER: &'static str = "email_authn_new_device_worker";
+    pub const CONSUMER: &'static str = "authn_email_new_device";
     pub const MAX_RETRIES: i64 = 5;
-    pub const STREAM: &'static str = "notify";
-    pub const SUBJECT: &'static str = "notify.email.authn.new_device";
+    pub const STREAM: &'static str = "authn";
+    pub const SUBJECT: &'static str = "authn.email.new_device";
 }

@@ -44,12 +44,12 @@ apidoc:
 
 # Set NATS context
 nats-context:
-    nats context save sys --server localhost:4222 --user root --password 2efbe41f2bbe7507e6b54d7d90937c5c
-    echo "⚠️ Add 'export NATS_CONTEXT=\"sys\"' to your ~/.zshrc or ~/.bashrc"
+    @ nats context add authn --server localhost:4222 --user admin --password 0b0296e1ae6b8c77
+    @ echo "⚠️ Add 'export NATS_CONTEXT=\"authn\"' to your ~/.zshrc or ~/.bashrc"
 
 # Setup NATS
 nats-setup:
-    nats stream edit notify --subjects "notify.email.authn.verification,notify.email.authn.new_device,notify.email.authn.change_password"
+    nats stream add authn --subjects "authn.email.verification,authn.email.new_device,authn.email.change_password" --retention=work --discard=new --defaults
 
 ## =========================================================================
 

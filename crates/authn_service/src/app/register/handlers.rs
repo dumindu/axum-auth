@@ -1,6 +1,6 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse};
 use bytes::Bytes;
-use nats_messages::notify_emails_authn::Verification as VerificationMsg;
+use nats_messages::authn::Verification as VerificationMsg;
 use tracing::error;
 
 use super::payload::RegistrationRequest;

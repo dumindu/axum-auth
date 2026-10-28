@@ -1,0 +1,53 @@
+export CARGO_TARGET_DIR := "../../target"
+set dotenv-load
+
+localhost := "localhost"
+
+# List available commands
+help:
+    @just --list --unsorted --list-heading $'📧AUTHN-EMAIL\n'
+
+# Run lints (cargo fmt and clippy)
+lint:
+    cargo +nightly fmt --package authn_email_worker -- --check
+    cargo clippy --all-targets -- -D warnings
+
+# Run cargo check
+check:
+    cargo check
+
+# Run cargo build
+build:
+    cargo build --all-targets
+
+# Run cargo clean on the authn_email_worker package
+clean:
+    cargo clean --package authn_email_worker
+
+# Run cargo test
+test:
+    cargo test
+
+# Run worker app
+app:
+    NATS_HOST={{ localhost }} SMTP_HOST={{ localhost }} \
+    cargo run --bin app
+
+# Set NATS context
+nats-context:
+    @ nats context add authn --server localhost:4222 --user admin --password 0b0296e1ae6b8c77
+    @ echo "⚠️ Add 'export NATS_CONTEXT=\"authn\"' to your ~/.zshrc or ~/.bashrc"
+
+# Setup NATS
+nats-setup:
+    nats consumer add authn authn_email_verification --filter=authn.email.verification --ack=explicit --max-deliver=5 --pull --wait=2s --defaults
+
+## =========================================================================
+
+# Run docker commands
+docker *cmd:
+    docker {{ cmd }}
+
+# Build production distroless image
+build-for-prod:
+    docker build --build-context workspace_root=../../ -t authn-service-app -f prod.Dockerfile .
