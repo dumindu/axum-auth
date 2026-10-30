@@ -28,12 +28,12 @@ pub async fn run(
         let data = rkyv::access::<ArchivedVerification, rkyv::rancor::Failure>(&message.payload)?;
         let template = JINJA_ENV.get_template("email")?;
 
-        let expires_at = Timestamp::from_second(data.expires_at.to_native())?
+        let expires = Timestamp::from_second(data.expires_at.to_native())?
             .to_zoned(TimeZone::system())
             .to_string();
 
         let email_body =
-            template.render(context! {code => data.code.as_str(), expires_at => &expires_at})?;
+            template.render(context! {code => data.code.as_str(), expires => &expires})?;
 
         let m = Message::builder()
             .from("NoBody <nobody@domain.tld>".parse()?)
