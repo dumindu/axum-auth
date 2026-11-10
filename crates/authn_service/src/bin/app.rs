@@ -55,7 +55,7 @@ async fn main() -> anyhow::Result<()> {
         cookies_conf: conf.cookies,
     };
 
-    info!(addr = %addr, "Starting server");
+    info!(%addr, "Starting server");
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
     let app = routes::init(state);

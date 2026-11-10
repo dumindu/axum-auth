@@ -1,6 +1,5 @@
 use axum::{extract::State, http::StatusCode, response::IntoResponse};
-use bytes::Bytes;
-use nats_messages::authn::Verification as VerificationMsg;
+use nats_messages::authn::VerificationEmail;
 use tracing::error;
 
 use super::payload::RegistrationRequest;
@@ -69,7 +68,7 @@ pub async fn register(
         Error::TimeGen
     })?;
 
-    let nats_msg = VerificationMsg {
+    let nats_msg = VerificationEmail {
         email: email.to_owned(),
         code: verification.code,
         expires_at: verification.expires_at.as_second(),
@@ -79,7 +78,7 @@ pub async fn register(
         Error::MsgGen
     })?;
 
-    state.js.publish(VerificationMsg::SUBJECT, Bytes::copy_from_slice(&nats_msg)).await.map_err(
+    state.js.publish("authn.email.verification", nats_msg.to_vec().into()).await.map_err(
         |err| {
             error!(target: "nats", "failed to publish: {err:?}");
             Error::MsgPub

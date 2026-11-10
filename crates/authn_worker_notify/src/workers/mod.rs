@@ -1,1 +1,1 @@
-pub mod verification;
+pub mod verification_email;

@@ -1,6 +1,6 @@
 services:
-  app:
-    image: authn-service-app
+  worker:
+    image: authn-worker-notify
     env_file: .env
     build:
       context: .
@@ -11,12 +11,21 @@ services:
       - authn_service_default
 
   mail:
-    image: marlonb/mailcrab:latest
-    environment:
-      ENABLE_TLS_AUTH: true
+    image: axllent/mailpit:latest
+    container_name: authn-worker-notify-mail
+    restart: unless-stopped
+    volumes:
+      - ./.docker/mailpit:/data
     ports:
-      - "1080:1080"
       - "1025:1025"
+      - "8025:8025"
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_TLS_CERT: sans:localhost
+      MP_SMTP_TLS_KEY: sans:localhost
+      MP_SMTP_AUTH: user:password
+      MP_SMTP_REQUIRE_STARTTLS: false
     networks:
       - authn_service_default
 

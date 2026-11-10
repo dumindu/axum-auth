@@ -1,7 +1,6 @@
 use std::{convert::Infallible, str::FromStr};
 
 use envconfig::Envconfig;
-use jiff::SignedDuration;
 
 #[derive(Envconfig)]
 pub struct AppConf {
@@ -10,6 +9,9 @@ pub struct AppConf {
 
     #[envconfig(nested)]
     pub smtp: SmtpConf,
+
+    #[envconfig(nested)]
+    pub workers: WorkersConf,
 }
 
 impl AppConf {
@@ -44,17 +46,19 @@ pub struct SmtpConf {
     pub user: String,
     #[envconfig(from = "SMTP_PASS")]
     pub password: SecretString,
-    #[envconfig(from = "SMTP_MAX_CONN", default = "10")]
-    pub max_connection: u32,
     #[envconfig(from = "SMTP_MIN_CONN", default = "1")]
-    pub min_connection: u32,
-    #[envconfig(from = "SMTP_TIMEOUT", default = "5s")]
-    pub timeout: Duration,
+    pub min_connections: u32,
+    #[envconfig(from = "SMTP_MAX_CONN", default = "10")]
+    pub max_connections: u32,
+    #[envconfig(from = "SMTP_TIMEOUT_IN_SEC")]
+    pub timeout_in_seconds: u64,
+    #[envconfig(from = "SMTP_TIMEOUT_IDLE_IN_SEC")]
+    pub idle_timeout_in_seconds: u64,
 }
 
 impl SmtpConf {
     pub fn to_addr(&self) -> String {
-        format!("smtps://{}:{}@{}:{}", self.user, self.password.expose_str(), self.host, self.port)
+        format!("smtp://{}:{}@{}:{}", self.user, self.password.expose_str(), self.host, self.port)
     }
 }
 
@@ -76,15 +80,16 @@ impl SecretString {
     }
 }
 
-// Custom type: Duration
-#[derive(Clone)]
-pub struct Duration(pub SignedDuration);
+#[derive(Envconfig)]
+pub struct WorkersConf {
+    #[envconfig(nested)]
+    pub verification_email: WorkerVerificationEmailConf,
+}
 
-impl FromStr for Duration {
-    type Err = jiff::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = s.parse::<SignedDuration>()?;
-        Ok(Duration(parsed))
-    }
+#[derive(Envconfig)]
+pub struct WorkerVerificationEmailConf {
+    #[envconfig(from = "WORKER_VERIFICATION_EMAIL_CONSUMER_NAME")]
+    pub consumer_name: String,
+    #[envconfig(from = "WORKER_VERIFICATION_EMAIL_MAX_CONCURRENCY")]
+    pub max_concurrency: usize,
 }

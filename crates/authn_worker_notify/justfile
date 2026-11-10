@@ -28,10 +28,10 @@ clean:
 test:
     cargo test
 
-# Run worker app
-app:
+# Run worker
+worker:
     NATS_HOST={{ localhost }} SMTP_HOST={{ localhost }} \
-    cargo run --bin app
+    cargo run --bin worker
 
 # Set NATS context
 nats-context:
@@ -40,7 +40,8 @@ nats-context:
 
 # Setup NATS
 nats-setup:
-    nats consumer add authn authn_email_verification --filter=authn.email.verification --ack=explicit --max-deliver=5 --pull --wait=2s --defaults
+    nats consumer add authn verification_email --filter=authn.email.verification --ack=explicit \
+      --backoff=linear --backoff-steps=4 --backoff-max=2m --max-deliver=5 --max-pending=5000 --pull --wait=30s --defaults
 
 ## =========================================================================
 

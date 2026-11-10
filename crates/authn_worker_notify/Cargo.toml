@@ -2,18 +2,17 @@
 name = "authn_worker_notify"
 version = "0.1.0"
 edition = "2024"
-default-run = "app"
+default-run = "worker"
 
 [[bin]]
-name = "app"
+name = "worker"
 path = "src/bin/worker.rs"
 
 [dependencies]
 anyhow = "1.0.104"
-async-nats = "0.51.0"
+async-nats = "0.52.0"
 envconfig = "0.11.1"
 jiff = "0.2.38"
-lettre = { version = "0.11.23", default-features = false, features = ["tokio1", "tokio1-boring-tls", "builder", "smtp-transport", "pool"] }
 mimalloc = "0.1.52"
 minijinja = "3.0.4"
 nats_messages = { path = "../nats_messages" }
@@ -21,8 +20,9 @@ tokio = { version = "1.54.1", features = ["full"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["json", "env-filter"] }
 futures-util = "0.3.34"
-rkyv = "0.8.18"
 tokio-util = "0.7.20"
+rkyv = { version = "0.8.18", features = ["unaligned"] }
+lettre = { version = "0.11.23", default-features = false, features = ["tokio1", "tokio1-native-tls", "builder", "smtp-transport", "pool"] }
 
 [lints]
 workspace = true
