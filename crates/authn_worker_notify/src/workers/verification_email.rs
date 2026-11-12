@@ -9,8 +9,8 @@ use lettre::{
 use minijinja::{Environment, Template, context};
 use nats_messages::authn::VerificationEmail;
 use rkyv::{from_bytes, rancor::Error as RkyvError};
-use tokio::{select, sync::Semaphore};
-use tokio_util::sync::CancellationToken;
+use tokio::sync::Semaphore;
+use tokio_util::{sync::CancellationToken, task::TaskTracker};
 use tracing::{error, info, instrument};
 
 static NAME: &str = "verification_email";
@@ -48,63 +48,91 @@ impl Worker {
         info!("Starting worker");
 
         let mut messages = self.consumer.messages().await?;
+
+        let tracker = TaskTracker::new();
         let semaphore = Arc::new(Semaphore::new(self.max_concurrency));
 
         loop {
-            select! {
-                _ = self.child_token.cancelled() => {
-                    info!("Cancelling worker");
-                    semaphore.close();
+            let next_allowed = self
+                .child_token
+                .run_until_cancelled(async {
+                    let permit = semaphore.clone().acquire_owned().await?;
+                    anyhow::Ok((permit, messages.next().await))
+                })
+                .await;
+
+            match next_allowed {
+                None => {
+                    info!("Shutdown signal received");
                     break;
                 }
-
-                permit = semaphore.clone().acquire_owned() => {
-                    let _permit = permit?;
-
-                    match messages.next().await {
-                        Some(Ok(message)) => {
-                            let Ok(data) = from_bytes::<VerificationEmail, RkyvError>(&message.payload)
-                                .inspect_err(|error| error!(%error, "Failed to process message")) else {
-                                continue;
-                            };
-
-                            info!("Building email");
-
-                             let expires = Timestamp::from_second(data.expires_at)?
-                                .to_zoned(TimeZone::system())
-                                .to_string();
-
-                            let template_str = self.template
-                                .render(context! { code => data.code.as_str(), expires => &expires })?;
-
-                            let lettre_message = Message::builder()
-                                .from(SENDER.parse()?)
-                                .to(data.email.parse()?)
-                                .subject(SUBJECT)
-                                .header(ContentType::TEXT_HTML)
-                                .body(template_str)?;
-
-                            info!("Sending email");
-
-                            let Ok(_) = self.mailer.send(lettre_message).await
-                                .inspect_err(|error| error!(%error, "Failed to send email")) else {
-                                continue
-                            };
-
-                            info!("Email sent");
-
-                            let _ack = message.double_ack().await.inspect_err(|error| error!(%error, "Failed to double ack"));
-                        }
-                        Some(Err(error)) => {
-                            error!(%error, "Failed to receive message");
-                        }
-                        None => {}
-                    }
-
+                Some(Err(error)) => {
+                    error!(?error, "Failed to acquire semaphore");
+                    break;
                 }
+                Some(Ok((_, Some(Err(error))))) => {
+                    error!(?error, "Failed to read message from consumer");
+                    continue;
+                }
+                Some(Ok((permit, Some(Ok(message))))) => {
+                    let Ok(data) = from_bytes::<VerificationEmail, RkyvError>(&message.payload)
+                        .inspect_err(|error| error!(%error, "Failed to process message"))
+                    else {
+                        continue;
+                    };
+
+                    let template = self.template.clone();
+                    let mailer = self.mailer.clone();
+
+                    tracker.spawn(async move {
+                        let _permit = permit;
+
+                        let Ok(email) = build_email(template, data)
+                            .inspect_err(|error| error!(%error, "Failed to build email"))
+                        else {
+                            return;
+                        };
+
+                        let Ok(_) = mailer
+                            .send(email)
+                            .await
+                            .inspect_err(|error| error!(%error, "Failed to send email"))
+                        else {
+                            return;
+                        };
+
+                        let _ack = message
+                            .double_ack()
+                            .await
+                            .inspect_err(|error| error!(%error, "Failed to double ack"));
+                    });
+                }
+                _ => {}
             }
         }
 
+        drop(messages);
+        tracker.close();
+        tracker.wait().await;
+        semaphore.close();
+        info!("Worker tasks cancelled");
+
         Ok(())
     }
+}
+
+fn build_email(template: Template, data: VerificationEmail) -> anyhow::Result<Message> {
+    let expires = Timestamp::from_second(data.expires_at)?.to_zoned(TimeZone::system()).to_string();
+
+    let template_str =
+        template.render(context! { code => data.code.as_str(), expires => &expires })?;
+
+    let message = Message::builder()
+        .from(SENDER.parse()?)
+        .to(data.email.parse()?)
+        .subject(SUBJECT)
+        .header(ContentType::TEXT_HTML)
+        .body(template_str)?;
+
+    Ok(message)
 }
