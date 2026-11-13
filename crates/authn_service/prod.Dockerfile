@@ -1,4 +1,4 @@
-FROM rust:1.97-slim AS builder
+FROM rust:1.100-slim AS builder
 
 ARG CARGO_BUILD_TARGET=aarch64-unknown-linux-musl
 
@@ -19,6 +19,7 @@ RUN --mount=type=bind,source=src,target=src \
     --mount=type=bind,from=workspace_root,source=Cargo.lock,target=/build/Cargo.lock \
     --mount=type=bind,from=workspace_root,source=Cargo.toml,target=/build/Cargo.toml \
     --mount=type=bind,from=workspace_root,source=crates/nats_messages,target=/build/crates/nats_messages \
+    --mount=type=bind,from=workspace_root,source=crates/authn_worker_notify,target=/build/crates/authn_worker_notify \
     --mount=type=bind,source=toasty,target=toasty \
     --mount=type=bind,source=Toasty.toml,target=Toasty.toml \
     --mount=type=cache,target=/build/target/ \

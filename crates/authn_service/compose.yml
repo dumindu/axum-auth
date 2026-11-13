@@ -1,6 +1,7 @@
 services:
   app:
     image: authn-service-app
+    container_name: authn-service-app
     env_file: .env
     build:
       context: .

@@ -1,12 +1,17 @@
 services:
   worker:
     image: authn-worker-notify
+    container_name: authn-worker-notify
+    restart: on-failure
     env_file: .env
     build:
       context: .
       dockerfile: Dockerfile
       additional_contexts:
         workspace_root: ../..
+    depends_on:
+      mail:
+        condition: service_healthy
     networks:
       - authn_service_default
 

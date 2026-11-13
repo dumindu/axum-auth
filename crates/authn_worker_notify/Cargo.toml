@@ -14,7 +14,7 @@ async-nats = "0.52.0"
 envconfig = "0.11.1"
 jiff = "0.2.38"
 mimalloc = "0.1.52"
-minijinja = "3.0.4"
+minijinja = "3.1.0"
 nats_messages = { path = "../nats_messages" }
 tokio = { version = "1.54.1", features = ["full"] }
 tracing = "0.1.44"
@@ -23,6 +23,9 @@ futures-util = "0.3.34"
 rkyv = { version = "0.8.18", features = ["unaligned"] }
 lettre = { version = "0.11.23", default-features = false, features = ["tokio1", "tokio1-native-tls", "builder", "smtp-transport", "pool"] }
 tokio-util = { version = "0.7.20", features = ["rt"] }
+
+[target.'cfg(target_env = "musl")'.dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
 
 [lints]
 workspace = true
