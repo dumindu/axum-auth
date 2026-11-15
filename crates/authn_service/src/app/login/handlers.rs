@@ -48,11 +48,11 @@ pub async fn login(
         .include(User::fields().password())
         .get(&mut state.db)
         .await
-        .map_err(|err| {
-            if err.is_record_not_found() {
+        .map_err(|error| {
+            if error.is_record_not_found() {
                 Error::InvalidCredentials
             } else {
-                error!(target: "db", "failed to fetch: {err:?}");
+                error!(target: "db", %error, "db fetch failed");
                 Error::DbFetch
             }
         })?;
@@ -79,23 +79,23 @@ pub async fn login(
             .first()
             .exec(&mut state.db)
             .await
-            .map_err(|err| {
-                error!(target: "db", "failed to fetch: {err:?}");
+            .map_err(|error| {
+                error!(target: "db", %error, "db fetch failed");
                 Error::DbFetch
             })?,
         None => None,
     };
 
-    let mut tx = state.db.transaction().await.map_err(|err| {
-        error!(target: "db", "failed to begin tx: {err:?}");
+    let mut tx = state.db.transaction().await.map_err(|error| {
+        error!(target: "db", %error, "db tx begin failed");
         Error::DbTransactionBegin
     })?;
 
     let cookies_config = &state.cookies_conf;
     let user_device = match user_device {
         Some(mut existing_device) => {
-            existing_device.update().exec(&mut tx).await.map_err(|err| {
-                error!(target: "db", "failed to update: {err:?}");
+            existing_device.update().exec(&mut tx).await.map_err(|error| {
+                error!(target: "db", %error, "db update failed");
                 Error::DbUpdate
             })?;
             // todo: invalidate active access/ refresh tokens of same device
@@ -112,8 +112,8 @@ pub async fn login(
             })
             .exec(&mut tx)
             .await
-            .map_err(|err| {
-                error!(target: "db", "failed to insert: {err:?}");
+            .map_err(|error| {
+                error!(target: "db", %error, "db insert failed");
                 Error::DbInsert
             })?;
 
@@ -136,8 +136,8 @@ pub async fn login(
     })
     .exec(&mut tx)
     .await
-    .map_err(|err| {
-        error!(target: "db", "failed to insert: {err:?}");
+    .map_err(|error| {
+        error!(target: "db", %error, "db insert failed");
         Error::DbInsert
     })?;
     let token_id = &refresh_token.access_token_id;
@@ -145,8 +145,8 @@ pub async fn login(
 
     jar = jar.add(cookies::refresh_token(cookies_config, token_family_id, &raw_refresh_token));
 
-    tx.commit().await.map_err(|err| {
-        error!(target: "db", "failed to commit tx: {err:?}");
+    tx.commit().await.map_err(|error| {
+        error!(target: "db", %error, "db tx commit failed");
         Error::DbTransactionCommit
     })?;
 
@@ -157,8 +157,8 @@ pub async fn login(
         token_id,
         token_family_id,
     )
-    .map_err(|err| {
-        error!(target: "security", "failed to generate jwt token: {err:?}");
+    .map_err(|error| {
+        error!(target: "jwt", %error, "token generation failed");
         Error::JwtGen
     })?;
 

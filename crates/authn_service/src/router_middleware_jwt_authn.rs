@@ -174,8 +174,8 @@ pub async fn authn_middleware(
     })?;
 
     let key = token_blacklist_key(&token.id);
-    if state.cache.exists(&key).await.map_err(|err| {
-        error!(target: "cache", "failed to exists: {key}: {err:?}");
+    if state.cache.exists(&key).await.map_err(|error| {
+        error!(target: "cache", %key, %error, "cache exists failed");
         Error::CacheExists
     })? {
         return Err(BlacklistedToken);

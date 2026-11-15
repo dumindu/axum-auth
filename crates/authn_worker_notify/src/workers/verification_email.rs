@@ -67,16 +67,18 @@ impl Worker {
                     break;
                 }
                 Some(Err(error)) => {
-                    error!(?error, "Failed to acquire semaphore");
+                    error!(%error, "semaphore acquisition failed");
                     break;
                 }
                 Some(Ok((_, Some(Err(error))))) => {
-                    error!(?error, "Failed to read message from consumer");
+                    error!(target: "nats", %error, "nats messages next failed");
                     continue;
                 }
                 Some(Ok((permit, Some(Ok(message))))) => {
                     let Ok(data) = from_bytes::<VerificationEmail, RkyvError>(&message.payload)
-                        .inspect_err(|error| error!(%error, "Failed to process message"))
+                        .inspect_err(
+                            |error| error!(target: "rkyv", %error, "rkyv deserialize failed"),
+                        )
                     else {
                         continue;
                     };
@@ -87,24 +89,21 @@ impl Worker {
                     tracker.spawn(async move {
                         let _permit = permit;
 
-                        let Ok(email) = build_email(template, data)
-                            .inspect_err(|error| error!(%error, "Failed to build email"))
-                        else {
+                        let Ok(email) = build_email(template, data).inspect_err(
+                            |error| error!(target: "email", %error, "email build failed"),
+                        ) else {
                             return;
                         };
 
-                        let Ok(_) = mailer
-                            .send(email)
-                            .await
-                            .inspect_err(|error| error!(%error, "Failed to send email"))
-                        else {
+                        let Ok(_) = mailer.send(email).await.inspect_err(
+                            |error| error!(target: "email", %error, "email send failed"),
+                        ) else {
                             return;
                         };
 
-                        let _ack = message
-                            .double_ack()
-                            .await
-                            .inspect_err(|error| error!(%error, "Failed to double ack"));
+                        let _ack = message.double_ack().await.inspect_err(
+                            |error| error!(target: "nats", %error, "nats double ack failed"),
+                        );
                     });
                 }
                 _ => {}

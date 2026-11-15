@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
 
     tracing_subscriber::registry()
         .with(filter)
-        .with(tracing_subscriber::fmt::layer().json().with_target(false).with_current_span(false))
+        .with(tracing_subscriber::fmt::layer().json().flatten_event(true).with_target(false).with_current_span(false))
         .init();
 
     let conf = AppConf::init();
@@ -78,9 +78,9 @@ async fn main() -> anyhow::Result<()> {
         // early fails
         Some(result) = workers.join_next() => {
             match result {
-                Ok(Ok(name)) => error!("Failed to start worker: {}", name),
-                Ok(Err(err)) => error!("Failed to start with error: {}", err),
-                Err(err) => error!("Panicked with: {}", err)
+                Ok(Ok(name)) => error!(worker = name, "worker start failed"),
+                Ok(Err(error)) => error!(%error, "worker start failed with error"),
+                Err(error) => error!(%error, "worker start failed with panic")
             }
             cancel_token.cancel();
         }
@@ -97,9 +97,9 @@ async fn main() -> anyhow::Result<()> {
 
     while let Some(result) = workers.join_next().await {
         match result {
-            Ok(Ok(name)) => info!("Worker cancelled: {}", name),
-            Ok(Err(err)) => error!("Failed to cancel with error: {}", err),
-            Err(err) => error!("Failed to cancel with a panic: {}", err),
+            Ok(Ok(name)) => info!(worker = name, "worker cancelled"),
+            Ok(Err(error)) => error!(%error, "worker cancel failed with error"),
+            Err(error) => error!(%error, "worker cancel failed with panic"),
         }
     }
 

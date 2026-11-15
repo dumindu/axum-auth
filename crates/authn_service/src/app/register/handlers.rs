@@ -35,8 +35,8 @@ pub async fn register(
         .first()
         .exec(&mut state.db)
         .await
-        .map_err(|err| {
-            error!(target: "db", "failed to fetch: {err:?}");
+        .map_err(|error| {
+            error!(target: "db", %error, "db fetch failed");
             Error::DbFetch
         })?;
 
@@ -51,8 +51,8 @@ pub async fn register(
         .first()
         .exec(&mut state.db)
         .await
-        .map_err(|err| {
-            error!(target: "db", "failed to fetch: {err:?}");
+        .map_err(|error| {
+            error!(target: "db", %error, "db fetch failed");
             Error::DbFetch
         })?;
 
@@ -63,8 +63,8 @@ pub async fn register(
         return Err(Error::DuplicateEntity);
     }
 
-    let verification = Verification::new().map_err(|err| {
-        error!(target: "vfy", "failed to generate: {err:?}");
+    let verification = Verification::new().map_err(|error| {
+        error!(target: "time", %error, "time gen failed");
         Error::TimeGen
     })?;
 
@@ -73,14 +73,14 @@ pub async fn register(
         code: verification.code,
         expires_at: verification.expires_at.as_second(),
     };
-    let nats_msg = rkyv::to_bytes::<rkyv::rancor::Error>(&nats_msg).map_err(|err| {
-        error!(target: "rkyv", "failed to serialize: {err:?}");
+    let nats_msg = rkyv::to_bytes::<rkyv::rancor::Error>(&nats_msg).map_err(|error| {
+        error!(target: "rkyv", %error, "rkyv serialize failed");
         Error::MsgGen
     })?;
 
     state.js.publish("authn.email.verification", nats_msg.to_vec().into()).await.map_err(
-        |err| {
-            error!(target: "nats", "failed to publish: {err:?}");
+        |error| {
+            error!(target: "nats", %error, "nats publish failed");
             Error::MsgPub
         },
     )?;
@@ -96,8 +96,8 @@ pub async fn register(
     })
     .exec(&mut state.db)
     .await
-    .map_err(|err| {
-        error!(target: "db", "failed to insert: {err:?}");
+    .map_err(|error| {
+        error!(target: "db", %error, "db insert failed");
         Error::DbInsert
     })?;
 

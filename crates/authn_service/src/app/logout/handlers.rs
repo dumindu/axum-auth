@@ -45,19 +45,19 @@ pub async fn logout(
         .is_revoked(true)
         .exec(&mut state.db)
         .await
-        .map_err(|err| {
-            error!(target: "db", "failed to update: {err:?}");
+        .map_err(|error| {
+            error!(target: "db", %error, "db update failed");
             Error::DbUpdate
         })?;
 
-    UserDevice::update_by_id(user.device_id).exec(&mut state.db).await.map_err(|err| {
-        error!(target: "db", "failed to update: {err:?}");
+    UserDevice::update_by_id(user.device_id).exec(&mut state.db).await.map_err(|error| {
+        error!(target: "db", %error, "db update failed");
         Error::DbUpdate
     })?;
 
     let key = token_blacklist_key(&token.id);
-    state.cache.set_ex(&key, VALUE_TRUE, token.expires_in).await.map_err(|err| {
-        error!(target: "cache", "failed to set: {key}: {err:?}");
+    state.cache.set_ex(&key, VALUE_TRUE, token.expires_in).await.map_err(|error| {
+        error!(target: "cache", %key, %error, "cache set ex failed");
         Error::CacheSet
     })?;
 
