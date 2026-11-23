@@ -20,7 +20,7 @@ services:
     command: [ "sh", "-c", "/service/migration migration apply && /service/app" ]
 
   db:
-    image: postgres:18-alpine
+    image: postgres:19-alpine
     container_name: authn-service-db
     environment:
       POSTGRES_DB: authn-service-db
