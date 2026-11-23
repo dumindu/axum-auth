@@ -7,20 +7,20 @@ use serde::Serialize;
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::{JwtTokenConf, app::jwt_token};
+use crate::JwtTokenConf;
 
 pub const HEADER_ALG: &str = "EdDSA";
 pub const HEADER_TYP: &str = "JWT";
 pub const TOKEN_TYPE: &str = "Bearer";
 
 #[derive(Serialize)]
-pub struct Header {
+struct Header {
     pub alg: &'static str,
     pub typ: &'static str,
 }
 
 #[derive(Serialize)]
-pub struct Claims<'a> {
+struct Claims<'a> {
     #[serde(rename = "iss")]
     pub issuer: String,
 
@@ -69,7 +69,7 @@ pub fn generate_token_response(
 
     let expires_at = now.checked_add(access_token_duration)?.as_second() as u64;
 
-    let claims = jwt_token::Claims {
+    let claims = Claims {
         issuer: conf.issuer.clone(),
         audience: conf.audience.0.clone(),
         subject: user_id,

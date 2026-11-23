@@ -17,13 +17,13 @@ use crate::{
 };
 
 #[derive(Debug, Deserialize)]
-pub struct DecodedHeader {
+struct DecodedHeader {
     pub alg: String,
     pub typ: String,
 }
 
 #[derive(Debug, Deserialize)]
-pub struct DecodedClaims {
+struct DecodedClaims {
     #[serde(rename = "iss")]
     pub issuer: String,
 

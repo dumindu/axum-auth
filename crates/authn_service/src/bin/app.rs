@@ -15,7 +15,13 @@ async fn main() -> anyhow::Result<()> {
 
     tracing_subscriber::registry()
         .with(filter)
-        .with(tracing_subscriber::fmt::layer().json().flatten_event(true).with_target(false).with_current_span(false))
+        .with(
+            tracing_subscriber::fmt::layer()
+                .json()
+                .flatten_event(true)
+                .with_target(false)
+                .with_current_span(false),
+        )
         .init();
 
     let conf = AppConf::init();
