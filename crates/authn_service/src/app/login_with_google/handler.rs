@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::{
     AppState,
     app::sha_hashes,
-    errors::{Error, Error::TimeGen},
+    errors::{Error, Error::TimeGen, ErrorResponse},
     models::OauthChallenge,
 };
 
@@ -17,7 +17,21 @@ const PROVIDER: &str = "google";
 const FLOW_TYPE: &str = "login";
 const CHALLENGE_LIFETIME: SignedDuration = SignedDuration::from_mins(5);
 
-#[utoipa::path(post, path = "/v1/google/login", tag = "auth")]
+#[utoipa::path(
+    get,
+    path = "/v1/google/login",
+    tag = "auth",
+    responses(
+        (
+            status = 303,
+            description = "A successful redirect request",
+            headers(
+                ("Location" = String, description = "Google OAuth2 authorization URL")
+            )
+        ),
+        (status = 500, description = "An internal failure", body = ErrorResponse)
+    )
+)]
 pub async fn login_with_google(
     State(mut state): State<AppState>,
 ) -> Result<impl IntoResponse, Error> {

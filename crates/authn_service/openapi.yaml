@@ -9,6 +9,25 @@ servers:
 - url: http://localhost:3000
   description: Development
 paths:
+  /v1/google/login:
+    get:
+      tags:
+      - auth
+      operationId: login_with_google
+      responses:
+        '303':
+          description: A successful redirect request
+          headers:
+            Location:
+              schema:
+                type: string
+              description: Google OAuth2 authorization URL
+        '500':
+          description: An internal failure
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /v1/login:
     post:
       tags:
@@ -143,6 +162,7 @@ components:
       - CACHE_EXISTS_FAILED
       - PASSWORD_HASH_CONTEXT_FAILED
       - PASSWORD_HASH_ACTION_FAILED
+      - PKCE_GEN_FAILED
       - JWT_GEN_FAILED
       - TIME_GEN_FAILED
       - MSG_GEN_FAILED
