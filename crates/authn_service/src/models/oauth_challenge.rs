@@ -10,13 +10,9 @@ pub struct OauthChallenge {
 
     #[key]
     pub state: Uuid,
+
     pub nonce: Option<Uuid>,
-
-    pub pkce_code_verifier: String,
-
-    pub client_redirect_uri: String,
-
+    pub code_verifier: String,
     pub provider: String,
-
     pub flow_type: String,
 }

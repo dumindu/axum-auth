@@ -408,24 +408,18 @@ nullable = true
 
 [[schema.tables.columns]]
 id = { table = 7, index = 4 }
-name = "pkce_code_verifier"
+name = "code_verifier"
 ty = "String"
 storage_ty = "Text"
 
 [[schema.tables.columns]]
 id = { table = 7, index = 5 }
-name = "client_redirect_uri"
-ty = "String"
-storage_ty = "Text"
-
-[[schema.tables.columns]]
-id = { table = 7, index = 6 }
 name = "provider"
 ty = "String"
 storage_ty = "Text"
 
 [[schema.tables.columns]]
-id = { table = 7, index = 7 }
+id = { table = 7, index = 6 }
 name = "flow_type"
 ty = "String"
 storage_ty = "Text"

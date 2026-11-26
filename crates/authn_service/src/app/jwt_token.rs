@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use ed25519_dalek::{Signature, Signer, SigningKey, pkcs8::DecodePrivateKey};
-use jiff::Timestamp;
+use jiff::{SignedDuration, Timestamp};
 use serde::Serialize;
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -64,7 +64,7 @@ pub fn generate_token_response(
     let now = Timestamp::now();
     let issued_at = now.as_second() as u64;
 
-    let access_token_duration = conf.lifetime.0;
+    let access_token_duration = SignedDuration::from_mins(conf.lifetime_in_mins);
     let expires_in = access_token_duration.as_secs();
 
     let expires_at = now.checked_add(access_token_duration)?.as_second() as u64;

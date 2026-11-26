@@ -1,7 +1,6 @@
 use std::{collections::HashSet, convert::Infallible, str::FromStr};
 
 use envconfig::Envconfig;
-use jiff::SignedDuration;
 
 #[derive(Envconfig)]
 pub struct AppConf {
@@ -19,6 +18,12 @@ pub struct AppConf {
 
     #[envconfig(nested)]
     pub secrets: SecretsConf,
+
+    #[envconfig(nested)]
+    pub oauth2: OAuth2Conf,
+
+    #[envconfig(nested)]
+    pub http_client: HttpClientConf,
 
     #[envconfig(nested)]
     pub jwt: JwtTokenConf,
@@ -125,6 +130,27 @@ pub struct SecretsConf {
     pub device_id_hash_salt: SecretString,
 }
 
+#[derive(Envconfig)]
+pub struct OAuth2Conf {
+    #[envconfig(from = "REDIRECT_HOST")]
+    pub redirect_host: String,
+
+    #[envconfig(nested)]
+    pub google: GoogleOAuth2Conf,
+}
+
+#[derive(Envconfig)]
+pub struct HttpClientConf {
+    #[envconfig(from = "HTTP_CLIENT_MAX_IDLE_PER_HOST")]
+    pub max_idle_per_host: usize,
+    #[envconfig(from = "HTTP_CLIENT_POOL_IDLE_TIMEOUT_IN_SECS", default = "90")]
+    pub pool_idle_timeout_in_secs: u64,
+    #[envconfig(from = "HTTP_CLIENT_CONNECT_TIMEOUT_IN_SECS")]
+    pub connect_timeout_in_secs: u64,
+    #[envconfig(from = "HTTP_CLIENT_TIMEOUT_IN_SECS")]
+    pub timeout_in_secs: u64,
+}
+
 #[derive(Clone, Envconfig)]
 pub struct JwtTokenConf {
     #[envconfig(from = "JWT_TOKEN_PRIVATE_KEY")]
@@ -135,8 +161,8 @@ pub struct JwtTokenConf {
     pub issuer: String,
     #[envconfig(from = "JWT_TOKEN_AUDIENCE")]
     pub audience: StringSet,
-    #[envconfig(from = "JWT_TOKEN_LIFETIME")]
-    pub lifetime: Duration,
+    #[envconfig(from = "JWT_TOKEN_LIFETIME_IN_MINS")]
+    pub lifetime_in_mins: i64,
 }
 
 #[derive(Clone, Envconfig)]
@@ -147,6 +173,14 @@ pub struct CookiesConf {
     pub device_id_lifetime_in_days: i64,
     #[envconfig(from = "REFRESH_TOKEN_COOKIE_LIFETIME_IN_DAYS", default = "30")]
     pub refresh_token_lifetime_in_days: i64,
+}
+
+#[derive(Clone, Envconfig)]
+pub struct GoogleOAuth2Conf {
+    #[envconfig(from = "GOOGLE_OAUTH2_CLIENT_ID")]
+    pub client_id: SecretString,
+    #[envconfig(from = "GOOGLE_OAUTH2_CLIENT_SECRET")]
+    pub client_secret: SecretString,
 }
 
 // Custom type: SecretString
@@ -181,18 +215,5 @@ impl FromStr for StringSet {
             .collect();
 
         Ok(StringSet(items))
-    }
-}
-
-// Custom type: Duration
-#[derive(Clone)]
-pub struct Duration(pub SignedDuration);
-
-impl FromStr for Duration {
-    type Err = jiff::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parsed = s.parse::<SignedDuration>()?;
-        Ok(Duration(parsed))
     }
 }

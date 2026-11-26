@@ -1,4 +1,4 @@
-pub mod handlers;
+pub mod handler;
 
 use axum::{Router, routing::post};
 use utoipa::OpenApi;
@@ -6,9 +6,9 @@ use utoipa::OpenApi;
 use crate::state::AppState;
 
 pub fn router() -> Router<AppState> {
-    Router::new().route("/", post(handlers::logout))
+    Router::new().route("/", post(handler::logout))
 }
 
 #[derive(OpenApi)]
-#[openapi(paths(handlers::logout))]
-pub struct LogoutApi;
+#[openapi(paths(handler::logout))]
+pub struct Api;

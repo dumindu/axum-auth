@@ -1,5 +1,7 @@
+use std::time::Duration;
+
 use async_nats::{ConnectOptions, jetstream};
-use authn_service::{AppConf, AppState, models::*, routes};
+use authn_service::{AppConf, AppState, GoogleOAuth2Client, models::*, routes};
 use mimalloc::MiMalloc;
 use tracing::info;
 use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
@@ -50,11 +52,22 @@ async fn main() -> anyhow::Result<()> {
     let nats = async_nats::connect_with_options(conf.nats.to_addr(), nats_options).await?;
     let js = jetstream::new(nats);
 
+    let http_client = reqwest::Client::builder()
+        .pool_max_idle_per_host(conf.http_client.max_idle_per_host)
+        .pool_idle_timeout(Duration::from_secs(conf.http_client.pool_idle_timeout_in_secs))
+        .connect_timeout(Duration::from_secs(conf.http_client.connect_timeout_in_secs))
+        .timeout(Duration::from_secs(conf.http_client.timeout_in_secs))
+        .build()?;
+
+    let google_oauth2 =
+        GoogleOAuth2Client::new(&conf.oauth2.google, &conf.oauth2.redirect_host, http_client);
+
     let addr = conf.server.to_addr();
     let state = AppState {
         db,
         cache,
         js,
+        google_oauth2,
         server_conf: conf.server,
         secrets_conf: conf.secrets,
         jwt_token_conf: conf.jwt,

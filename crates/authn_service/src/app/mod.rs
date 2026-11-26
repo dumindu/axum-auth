@@ -8,6 +8,7 @@ mod verification;
 pub mod caches;
 pub mod jwt_token;
 pub mod login;
+pub mod login_with_google;
 pub mod logout;
 pub mod register;
 

@@ -81,14 +81,13 @@ CREATE INDEX "index_user_identities_by_user_id" ON "user_identities" ("user_id")
 
 CREATE TABLE "oauth_challenges"
 (
-    "created_at"          TIMESTAMPTZ(6) NOT NULL,
-    "expires_at"          TIMESTAMPTZ(6) NOT NULL,
-    "state"               UUID NOT NULL,
-    "nonce"               UUID,
-    "pkce_code_verifier"  TEXT NOT NULL,
-    "client_redirect_uri" TEXT NOT NULL,
-    "provider"            TEXT NOT NULL,
-    "flow_type"           TEXT NOT NULL,
+    "created_at"    TIMESTAMPTZ(6) NOT NULL,
+    "expires_at"    TIMESTAMPTZ(6) NOT NULL,
+    "state"         UUID NOT NULL,
+    "nonce"         UUID,
+    "code_verifier" TEXT NOT NULL,
+    "provider"      TEXT NOT NULL,
+    "flow_type"     TEXT NOT NULL,
     PRIMARY KEY ("state")
 );
 

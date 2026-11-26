@@ -35,6 +35,8 @@ pub enum Error {
     PasswordHashContext,
     #[schema(rename = "PASSWORD_HASH_ACTION_FAILED")]
     PasswordHashAction,
+    #[schema(rename = "PKCE_GEN_FAILED")]
+    PkceGen,
     #[schema(rename = "JWT_GEN_FAILED")]
     JwtGen,
     #[schema(rename = "TIME_GEN_FAILED")]
@@ -111,8 +113,11 @@ impl IntoResponse for Error {
             Error::PasswordHashAction => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"PASSWORD_HASH_ACTION_FAILED\"}")
             }
+            Error::PkceGen => {
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"PKCE_GEN_FAILED\"}")
+            }
             Error::JwtGen => {
-                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"Jwt_GEN_FAILED\"}")
+                (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"JWT_GEN_FAILED\"}")
             }
             Error::TimeGen => {
                 (StatusCode::INTERNAL_SERVER_ERROR, b"{\"error\": \"TIME_GEN_FAILED\"}")
